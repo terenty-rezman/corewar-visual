@@ -37,9 +37,10 @@ next_brush = itertools.cycle(brushes)
 
 
 class Carret:
-    def __init__(self, addr=0, brush=QBrush(COLOR_EMPTY)):
+    def __init__(self, addr=0):
+        self.i = 0
+        self.j = 0
         self.addr = addr
-        self.brush = brush
 
     @property
     def addr(self):
@@ -49,10 +50,10 @@ class Carret:
     def addr(self, value):
         self._addr = value % 4096
 
-        i = self._addr % 64
-        j = self._addr // 64
+        self.i = self._addr % 64
+        self.j = self._addr // 64
 
-        self.pos = i, j
+        self.pos = self.i, self.j
 
 
 class Player:
@@ -76,16 +77,50 @@ class CoreManager:
 
         self.players[name] = Player(next(next_pen), next(next_brush))
 
-    def add_carret(self, player_name, carret_name):
+    def add_carret(self, player_name, carret_name, addr):
         player = self.players[player_name]
 
         if carret_name in player.carrets:
             raise Exception(carret_name + " carret already exists")
 
-        player.carrets[carret_name] = Carret(
-            brush=player.brush, addr=int(random()*55))
+        player.carrets[carret_name] = Carret(addr=addr)
 
         self.view.update_carrets_layer(self.players)
+
+    def move_carret(self, player_name, carret_name, num_bytes):
+        player = self.players[player_name]
+        carret = player.carrets[carret_name]
+
+        carret.addr += num_bytes
+
+        self.view.update_carrets_layer(self.players)
+
+    def move_carret_2(self, player_name, carret_name, num_bytes):
+        player_this = self.players[player_name]
+        carret_this = player_this.carrets[carret_name]
+
+        brush = BRUSH_EMPTY
+
+        # check if any other carrets on the same pos as carret_this
+        # if so erase old carret pos with other carret's brush
+        for player in self.players.values():
+            for carret in player.carrets.values():
+                if carret != carret_this:
+                    if carret.i == carret_this.i and carret.j == carret_this.j:
+                        brush = player.brush
+                        break
+            else:
+                continue
+            break
+
+        # erase carret from old pos
+        view.draw_carret_rect(carret_this.pos, brush)
+
+        carret_this.addr += num_bytes
+
+        # draw carret at new pos
+        view.draw_carret_rect(
+            carret_this.pos, player_this.brush, True, carret_this.addr)
 
 
 class ByteView(QWidget):
@@ -108,9 +143,9 @@ class ByteView(QWidget):
 
         self.byte_rect = self.compute_byte_rect()
         self.byte_advance = self.compute_byte_advance()
-        self.bytes_pixmap = self.create_pixmap()
+        self.bytes_pixmap = self.create_pixmap(transparent=True)
         self.bytes_field = self.build_bytes_field()
-        self.carrets_pixmap = self.create_pixmap(transparent=True)
+        self.carrets_pixmap = self.create_pixmap(transparent=False)
 
         self.render_empty_bytes_to_pixmap()
 
@@ -164,24 +199,10 @@ class ByteView(QWidget):
     def render_empty_bytes_to_pixmap(self):
         pixmap_painter = QPainter(self.bytes_pixmap)
         pixmap_painter.setFont(self.font)
-        self.draw_empty_bytes(pixmap_painter)
+
+        self.print_to_pixmap(pixmap_painter, 0, "00"*4096, PEN_EMPTY)
+
         pixmap_painter.end()
-
-    def draw_empty_bytes(self, painter):
-        byte_rect = QRect(self.byte_rect)
-        h = byte_rect.height()
-
-        # clear pixmap
-        painter.setBackground(QCOLOR_BKG_EMPTY)
-        painter.eraseRect(self.bytes_pixmap.rect())
-
-        # fill with empty values
-        painter.setPen(PEN_EMPTY)
-
-        for i in range(64):
-            for j in range(64):
-                byte_rect.moveTopLeft(QPoint(i*self.byte_advance, j*h))
-                painter.drawText(byte_rect, Qt.AlignCenter, '00')
 
     def byte_index(self, byte_addr):
         while True:
@@ -205,7 +226,10 @@ class ByteView(QWidget):
         byte_rect = QRect(self.byte_rect)
         h = byte_rect.height()
 
-        painter.setBrush(BRUSH_EMPTY)
+        # painter.setBrush(BRUSH_EMPTY)
+        painter.setBrush(Qt.transparent)
+
+        painter.setCompositionMode(QPainter.CompositionMode_Source)
 
         for digit1, digit2 in pairs(string):
             i, j = next(index)
@@ -217,6 +241,8 @@ class ByteView(QWidget):
 
             painter.setPen(pen)
             painter.drawText(byte_rect, Qt.AlignCenter, f'{txt}')
+
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
 
     def print_to_bytes_field(self, byte_addr, string, pen):
         for digit1, digit2 in pairs(string):
@@ -232,32 +258,55 @@ class ByteView(QWidget):
         painter.setFont(self.font)
 
         # clear background
-        painter.setCompositionMode(QPainter.CompositionMode_Source)
-        painter.fillRect(self.carrets_pixmap.rect(), Qt.transparent)
-        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        # painter.setCompositionMode(QPainter.CompositionMode_Source)
+        # painter.fillRect(self.carrets_pixmap.rect(), Qt.transparent)
+        # painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        painter.fillRect(self.carrets_pixmap.rect(), BRUSH_EMPTY)
 
         carret_rect = QRect(self.byte_rect)
         h = carret_rect.height()
 
-        painter.setOpacity(0.5)
+        # painter.setOpacity(0.6)
+
+        painter.setPen(Qt.NoPen)
 
         for player in players.values():
+            brush = player.brush
+            painter.setBrush(brush)
+
             for carret in player.carrets.values():
                 addr = carret.addr
                 i, j = carret.pos
-                brush = carret.brush
 
-                txt = self.bytes_field[addr][0]
+                #txt = self.bytes_field[addr][0]
 
                 carret_rect.moveTopLeft(QPoint(i*self.byte_advance, j*h))
-
-                painter.setPen(Qt.NoPen)
-                painter.setBrush(brush)
                 painter.drawRect(carret_rect)
 
                 # painter.setPen(PEN_BLACK)
                 #painter.drawText(carret_rect, Qt.AlignCenter, f'{txt}')
-        painter.setOpacity(1)
+        # painter.setOpacity(1)
+
+        painter.end()
+
+    def draw_carret_rect(self, pos, brush, draw_byte_value=False, addr=0):
+        painter = QPainter(self.carrets_pixmap)
+
+        carret_rect = QRect(self.byte_rect)
+        h = carret_rect.height()
+        i, j = pos
+
+        carret_rect.moveTopLeft(QPoint(i*self.byte_advance, j*h))
+
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(brush)
+        painter.drawRect(carret_rect)
+
+        # if draw_byte_value:
+        #     painter.setFont(self.font)
+        #     txt = self.bytes_field[addr][0]
+        #     painter.setPen(PEN_BLACK)
+        #     painter.drawText(carret_rect, Qt.AlignCenter, f'{txt}')
 
         painter.end()
 
@@ -270,10 +319,13 @@ class ByteView(QWidget):
 
         pixmap_pos = self.compute_bytes_pixmap_pos()
 
+        # draw carrets layer
+        painter.setOpacity(1)
+        painter.drawPixmap(pixmap_pos, self.carrets_pixmap)
+        painter.setOpacity(1)
+
         # draw memory view layer
         painter.drawPixmap(pixmap_pos, self.bytes_pixmap)
-        # draw carrets layer
-        painter.drawPixmap(pixmap_pos, self.carrets_pixmap)
 
     def timerEvent(self, event):
         # render bytes to pixmap
@@ -287,19 +339,19 @@ timer = QTimer()
 def test(view):
     core_manager = CoreManager(view)
     core_manager.add_player("p1")
-    core_manager.add_carret("p1", "c1")
 
     core_manager.add_player("p2")
-    core_manager.add_carret("p2", "c2")
 
     core_manager.add_player("p3")
-    core_manager.add_carret("p3", "c3")
 
     core_manager.add_player("p4")
-    core_manager.add_carret("p4", "c4")
+
+    for name in core_manager.players:
+        for i in range(10):
+            core_manager.add_carret(name, f"c{i}", int(random()*4096))
 
     timer.timeout.connect(functools.partial(test_update, core_manager))
-    timer.start(1000 / 60)
+    timer.start(1000/60)
 
 
 def test_update(core_manager):
@@ -309,16 +361,14 @@ def test_update(core_manager):
     h_value = f'{n:02X}'
     addr = test_curr_addr
 
+    for player in core_manager.players.values():
+        player.write_bytes(int(random()*4096), h_value, core_manager.view)
+
     core_manager.players["p1"].write_bytes(addr, h_value, core_manager.view)
 
-    core_manager.players["p2"].write_bytes(
-        int(random()*4096), h_value, core_manager.view)
-
-    core_manager.players["p3"].write_bytes(
-        int(random()*4096), h_value, core_manager.view)
-
-    core_manager.players["p4"].write_bytes(
-        int(random()*4096), h_value, core_manager.view)
+    for player_name, player in core_manager.players.items():
+        for carret_name in player.carrets:
+            core_manager.move_carret_2(player_name, carret_name, 1)
 
     test_curr_addr += 1
 
