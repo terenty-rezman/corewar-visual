@@ -123,6 +123,11 @@ class CoreManager:
         self.view.draw_carret_rect(
             carret_this.pos, player_this.brush, carret_this.addr)
 
+    def write_bytes(self, player_name, addr, bytes_str):
+        player: Player = self.players[player_name]
+
+        player.write_bytes(addr, bytes_str, self.view)
+
 
 class ByteView(QWidget):
     byte_margin = 0
@@ -330,13 +335,12 @@ def test_update(core_manager: CoreManager):
     global test_curr_addr
 
     n = int(random()*256)
-    h_value = f'{n:02X}'
+    hex_value = f'{n:02X}'
     addr = test_curr_addr
 
-    for player in core_manager.players.values():
-        player.write_bytes(int(random()*4096), h_value, core_manager.view)
-
-    core_manager.players["p1"].write_bytes(addr, h_value, core_manager.view)
+    for player_name in core_manager.players:
+        core_manager.write_bytes(
+            player_name, addr, hex_value)
 
     for player_name, player in core_manager.players.items():
         for carret_name in player.carrets:
