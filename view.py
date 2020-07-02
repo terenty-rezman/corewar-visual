@@ -1,12 +1,10 @@
-import sys
-from random import random
-import itertools
-import functools
 from typing import List, Dict, Tuple
 
 from PySide2.QtWidgets import QApplication, QWidget
 from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics
 from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer
+
+from colors import *
 
 
 def pairs(string):
@@ -20,116 +18,10 @@ def pairs(string):
         pass
 
 
-colors = ["#D34C75", "#E9C13B", "#0A92AC", "#8662EA"]
-pens = [QPen(QColor(color)) for color in colors]
-brushes = [QBrush(QColor(color)) for color in colors]
-
-COLOR_BKG_EMPTY = "#1D1D1D"
-QCOLOR_BKG_EMPTY = QColor(COLOR_BKG_EMPTY)
-BRUSH_EMPTY = QBrush(QCOLOR_BKG_EMPTY)
-
-COLOR_EMPTY = "#4D4D4D"
-QCOLOR_EMPTY = QColor(COLOR_EMPTY)
-PEN_EMPTY = QPen(QCOLOR_EMPTY)
-PEN_BLACK = QPen(QColor("#000"))
-PEN_BCK = QPen("#2D2D2D")
-
-next_pen = itertools.cycle(pens)
-next_brush = itertools.cycle(brushes)
-
-
-class Carret:
-    def __init__(self, addr=0):
-        self.i = 0
-        self.j = 0
-        self.addr = addr
-
-    @property
-    def addr(self):
-        return self._addr
-
-    @addr.setter
-    def addr(self, value):
-        self._addr = value % 4096
-
-        self.i = self._addr % 64
-        self.j = self._addr // 64
-
-        self.pos = self.i, self.j
-
-
-class Player:
-    def __init__(self, pen, brush):
-        self.pen = pen
-        self.brush = brush
-        self.carrets: Dict[str, Carret] = dict()
-
-    def write_bytes(self, addr, bytes_str, view):
-        view.write_bytes(addr, bytes_str, self.pen)
-
-
-class CoreManager:
-    def __init__(self, view):
-        self.view = view
-        self.players: Dict[str, Player] = dict()
-
-    def add_player(self, name):
-        if name in self.players:
-            raise Exception(name + " player already exists")
-
-        self.players[name] = Player(next(next_pen), next(next_brush))
-
-    def add_carret(self, player_name, carret_name, addr):
-        player = self.players[player_name]
-
-        if carret_name in player.carrets:
-            raise Exception(carret_name + " carret already exists")
-
-        new_carret = Carret(addr=addr)
-        player.carrets[carret_name] = new_carret
-
-        self.view.draw_carret_rect(
-            new_carret.pos, player.brush, new_carret.addr)
-
-    def move_carret(self, player_name, carret_name, num_bytes):
-        player_this: Player = self.players[player_name]
-        carret_this: Carret = player_this.carrets[carret_name]
-
-        repaint_carret = False
-
-        # check if any other carrets on the same pos as carret_this
-        # if so erase old carret pos with other carret's brush
-        for player in self.players.values():
-            for carret in player.carrets.values():
-                if carret != carret_this:
-                    if carret.i == carret_this.i and carret.j == carret_this.j:
-                        repaint_carret = True
-                        brush = player.brush
-                        break
-            else:
-                continue
-            break
-
-        # erase carret from old pos
-        if repaint_carret:
-            self.view.draw_carret_rect(
-                carret_this.pos, brush, carret_this.addr)
-        else:
-            self.view.erase_carret_rect(carret_this.pos)
-
-        carret_this.addr += num_bytes
-
-        # draw carret at new pos
-        self.view.draw_carret_rect(
-            carret_this.pos, player_this.brush, carret_this.addr)
-
-    def write_bytes(self, player_name, addr, bytes_str):
-        player: Player = self.players[player_name]
-
-        player.write_bytes(addr, bytes_str, self.view)
-
-
 class ByteView(QWidget):
+    """
+    Is used to draw memory, players and carrets state onto a widget
+    """
     byte_margin = 0
     byte_padding = 4
 
@@ -307,53 +199,3 @@ class ByteView(QWidget):
     def timerEvent(self, event):
         # render bytes to pixmap
         self.update()
-
-
-test_curr_addr = 0
-timer = QTimer()
-
-
-def test(view):
-    core_manager = CoreManager(view)
-    core_manager.add_player("p1")
-
-    core_manager.add_player("p2")
-
-    core_manager.add_player("p3")
-
-    core_manager.add_player("p4")
-
-    for name in core_manager.players:
-        for i in range(10):
-            core_manager.add_carret(name, f"c{i}", int(random()*4096))
-
-    timer.timeout.connect(functools.partial(test_update, core_manager))
-    timer.start(69000/60)
-
-
-def test_update(core_manager: CoreManager):
-    global test_curr_addr
-
-    n = int(random()*256)
-    hex_value = f'{n:02X}'
-    addr = test_curr_addr
-
-    for player_name in core_manager.players:
-        core_manager.write_bytes(
-            player_name, addr, hex_value)
-
-    for player_name, player in core_manager.players.items():
-        for carret_name in player.carrets:
-            core_manager.move_carret(player_name, carret_name, 1)
-
-    test_curr_addr += 1
-
-
-if __name__ == "__main__":
-    app = QApplication()
-    view = ByteView()
-    view.show()
-
-    test(view)
-
-    sys.exit(app.exec_())
