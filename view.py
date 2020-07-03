@@ -1,6 +1,6 @@
 from typing import List, Dict, Tuple
 
-from PySide2.QtWidgets import QApplication, QWidget
+from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, QSizePolicy
 from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics
 from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer
 
@@ -16,6 +16,32 @@ def pairs(string):
             yield a, b
     except StopIteration:
         pass
+
+
+class View(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.byte_view = ByteView()
+        self.scroll_area = QScrollArea()
+        self.layout = QHBoxLayout()
+
+        self.scroll_area.setWidget(self.byte_view)
+        self.scroll_area.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+        self.layout.addWidget(self.scroll_area)
+        self.setLayout(self.layout)
+
+        self.style()
+
+    def style(self):
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        # make scrollbars above content
+        self.scroll_area.setViewportMargins(0, 0, -8, -8)
+
+        with open("stylesheet.qss") as file:
+            stylesheet = file.read()
+
+        self.setStyleSheet(stylesheet)
 
 
 class ByteView(QWidget):
@@ -44,6 +70,9 @@ class ByteView(QWidget):
         self.bytes_pixmap = self.create_pixmap(transparent=False)
         self.bytes_field = self.build_bytes_field()
         self.carrets_pixmap = self.create_pixmap(transparent=True)
+
+        self.setMinimumWidth(self.bytes_pixmap.width())
+        self.setMinimumHeight(self.bytes_pixmap.height())
 
         self.render_empty_bytes_to_pixmap()
 
@@ -76,23 +105,6 @@ class ByteView(QWidget):
             l.append(["00", PEN_EMPTY])
 
         return l
-
-    def compute_bytes_pixmap_pos(self):
-        view_width = self.rect().width()
-        view_height = self.rect().height()
-        pixmap_width = self.bytes_pixmap.width()
-        pixmap_height = self.bytes_pixmap.height()
-
-        h_margin = None
-        v_margin = None
-
-        if view_width > pixmap_width:
-            h_margin = (view_width - pixmap_width) / 2
-
-        if view_height > pixmap_height:
-            v_margin = (view_height - pixmap_height) / 2
-
-        return QPoint(h_margin or 0, v_margin or 0)
 
     def render_empty_bytes_to_pixmap(self):
         pixmap_painter = QPainter(self.bytes_pixmap)
@@ -188,13 +200,11 @@ class ByteView(QWidget):
         painter.setBackground(QCOLOR_BKG_EMPTY)
         painter.eraseRect(self.rect())
 
-        pixmap_pos = self.compute_bytes_pixmap_pos()
-
         # draw memory view layer
-        painter.drawPixmap(pixmap_pos, self.bytes_pixmap)
+        painter.drawPixmap(QPoint(), self.bytes_pixmap)
 
         # draw carrets layer
-        painter.drawPixmap(pixmap_pos, self.carrets_pixmap)
+        painter.drawPixmap(QPoint(), self.carrets_pixmap)
 
     def timerEvent(self, event):
         # render bytes to pixmap

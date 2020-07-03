@@ -1,0 +1,85 @@
+QLabel {
+    color: #eeeeee;
+    font: 20px;
+}
+
+QLabel#error {
+    color: #e91e63;
+    font: 18px;
+}
+
+QLabel#second {
+    color: #aaaaaa;
+    font: 15px;
+}
+
+QFrame {
+    border: none;
+    background: #1D1D1D;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background-color: transparent;
+    width: 8px;
+    margin: 0px;
+    padding: 0px;
+}
+
+QScrollBar::add-page:vertical {
+    background: none;
+}
+
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+    background: #ff0000;
+}
+
+QScrollBar:top-arrow:vertical, QScrollBar::bottom-arrow:vertical {
+    background: #555555;
+}
+
+QScrollBar::handle:vertical {
+    background: #AA666666;
+    min-height: 0px;
+    width: 10px;
+}
+
+QScrollBar::add-line {
+    border: none;
+    background: none;
+    height: 0px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line {
+    border: none;
+    background: none;
+    height: 0px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background-color: transparent;
+    height: 8px;
+    margin: 0px 0px 0px 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #AA666666;
+    height: 10px;
+}
+
+QScrollBar::add-page:horizontal {
+    background: none;
+}
+
+QScrollBar::sub-page:horizontal {
+    background: none;
+}

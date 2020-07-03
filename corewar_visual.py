@@ -9,7 +9,7 @@ from PySide2.QtCore import QTimer
 
 from stdin_listener import StdinListener
 from colors import *
-from view import ByteView
+from view import View
 from corewar_state_manager import CorewarStateManager
 from corewar_parser import CorewarParser
 
@@ -27,8 +27,8 @@ sys.excepthook = uncaught_exception_hook
 if __name__ == "__main__":
     app = QApplication()
 
-    view = ByteView()
-    manager = CorewarStateManager(view)
+    view = View()
+    manager = CorewarStateManager(view.byte_view)
     parser = CorewarParser(manager)
     stdin_listener = StdinListener(parser.parser_corewar_output, 500)
 
