@@ -1,6 +1,6 @@
 from typing import List, Dict, Tuple
 
-from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, QSizePolicy
+from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, QSizePolicy, QScrollBar
 from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics
 from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer
 
@@ -18,12 +18,32 @@ def pairs(string):
         pass
 
 
+class MouseScrolledArea(QScrollArea):
+    def mousePressEvent(self, ev):
+        self.mouse_last_pos = ev.pos()
+
+    def mouseMoveEvent(self, ev):  # mouse move only triggered when a mouse button pressed
+        dmouse = ev.pos() - self.mouse_last_pos
+        self.scrollContent(-dmouse.x(), -dmouse.y())
+        self.mouse_last_pos = ev.pos()
+
+    def scrollContent(self, dx, dy):
+        horizontal = self.horizontalScrollBar()
+        vertical = self.verticalScrollBar()
+
+        v_value = vertical.value()
+        h_value = horizontal.value()
+
+        horizontal.setValue(h_value + dx)
+        vertical.setValue(v_value + dy)
+
+
 class View(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.byte_view = ByteView()
-        self.scroll_area = QScrollArea()
+        self.scroll_area = MouseScrolledArea()
         self.layout = QHBoxLayout()
 
         self.scroll_area.setWidget(self.byte_view)
