@@ -10,54 +10,48 @@ import functools
 sep = '"'  # separator sign
 
 
-def add_player(name, address, bytes):
-    sys.stdout.write(
-        f'p{sep}{name}{sep}{address}{sep}{bytes}\n'
+def add_player(cycle, player_id, name, address, bytes):
+    print(
+        f'p{sep}{cycle}{sep}{player_id}{sep}{name}{sep}{address}{sep}{bytes}\n'
     )
 
-    sys.stdout.flush()
 
-
-def add_carret(pl_name, ca_name, address):
-    sys.stdout.write(
-        f'c{sep}{pl_name}{sep}{ca_name}{sep}{address}\n'
+def add_carret(cycle, player_id, carret_id, address):
+    print(
+        f'c{sep}{cycle}{sep}{player_id}{sep}{carret_id}{sep}{address}\n'
     )
 
-    sys.stdout.flush()
 
-
-def kill_carret(pl_name, ca_name):
-    sys.stdout.write(
-        f'k{sep}{pl_name}{sep}{ca_name}\n'
+def kill_carret(cycle, player_id, carret_id):
+    print(
+        f'k{sep}{cycle}{sep}{player_id}{sep}{carret_id}\n'
     )
 
-    sys.stdout.flush()
 
-
-def move_carret(pl_name, ca_name, offset):
-    sys.stdout.write(
-        f'm{sep}{pl_name}{sep}{ca_name}{sep}{offset}\n'
+def move_carret(cycle, player_id, carret_id, offset):
+    print(
+        f'm{sep}{cycle}{sep}{player_id}{sep}{carret_id}{sep}{offset}\n'
     )
-
-    sys.stdout.flush()
 
 
 sleep = functools.partial(time.sleep, 2)
 
 # start emulating output of corewar vm to stdout
-add_player('Batman', 0, "00002901DA04446963742901DA")
-add_player('Robin', 64*10, "df01bb09")
-add_player('Yoshi', 64*20, "47823958")
-add_player('Mario', 64*50, "44ff55eeaabbcacd9933")
+add_player(1, hex(0x000001), 'Batman', 0, "00002901DA04446963742901DA")
+add_player(1, 0x000002, 'Robin', 64*10, "df01bb09")
+add_player(1, 0x000003, 'Yoshi', 64*20, "47823958")
+add_player(1, 0x000004, 'Mario', 64*50, "44ff55eeaabbcacd9933")
 
-add_carret('Batman', 'c1', 0)
-add_carret('Robin', 'c1', 64*10)
-add_carret('Yoshi', 'c1', 64*20)
-add_carret('Mario', 'c1', 64*50)
+sleep()
+add_carret(2, 0x000001, 0x000001, 0)  # player 1 adds carret 1
+add_carret(2, 0x000002, 0x000002, 64*10)  # player 2 adds carret 1
+add_carret(2, 0x000003, 0x000003, 64*20)  # player 3 adds carret 1
+add_carret(2, 0x000004, 0x000004, 64*50)  # player 4 adds carret 1
 
-add_carret('Batman', 'c2', 64*13)
-
-move_carret('Batman', 'c2', 4)
-move_carret('Batman', 'c2', 4)
-
-kill_carret('Batman', 'c2')
+sleep()
+add_carret(10, 0x000001, 0x000002, 64*13)  # player 1 adds carret 2
+sleep()
+move_carret(20, 0x000001, 0x000002, 4)  # move carret 2 of player 1
+move_carret(40, 0x000001, 0x000002, 4)  # move carret 2 of player 1
+sleep()
+kill_carret(50, 0x000001, 0x000002)  # kill carret 2 of player 1
