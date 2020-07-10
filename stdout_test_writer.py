@@ -34,6 +34,13 @@ def move_carret(cycle, player_id, carret_id, offset):
     )
 
 
+def write_memory(cycle, player_id, address, bytes):
+    """ st & sti instruction"""
+    print(
+        f'w{sep}{cycle}{sep}{player_id}{sep}{address}{sep}{bytes}'
+    )
+
+
 sleep = functools.partial(time.sleep, 2)
 
 # start emulating output of corewar vm to stdout
