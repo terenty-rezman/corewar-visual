@@ -3,7 +3,7 @@ from typing import Dict
 from colors import *
 
 
-class Carret:
+class Carriage:
     def __init__(self, addr=0):
         self.i = 0
         self.j = 0
@@ -24,10 +24,11 @@ class Carret:
 
 
 class Player:
-    def __init__(self, pen, brush):
+    def __init__(self, name, pen, brush):
+        self.name = name
         self.pen = pen
         self.brush = brush
-        self.carrets: Dict[str, Carret] = dict()
+        self.carrets: Dict[str, Carriage] = dict()
 
     def write_bytes(self, addr, bytes_str, view):
         view.write_bytes(addr, bytes_str, self.pen)
@@ -43,35 +44,35 @@ class CorewarStateManager:
         self.view = view
         self.players: Dict[str, Player] = dict()
 
-    def add_player(self, name):
+    def add_player(self, id, name):
         if name in self.players:
             raise Exception(name + " player already exists")
 
-        self.players[name] = Player(next(next_pen), next(next_brush))
+        self.players[id] = Player(name, next(next_pen), next(next_brush))
 
-    def add_carret(self, player_name, carret_name, addr):
-        player = self.players[player_name]
+    def add_carret(self, player_id, carriage_id, addr):
+        player = self.players[player_id]
 
-        if carret_name in player.carrets:
-            raise Exception(carret_name + " carret already exists")
+        if carriage_id in player.carrets:
+            raise Exception(carriage_id + " carret already exists")
 
-        new_carret = Carret(addr=addr)
-        player.carrets[carret_name] = new_carret
+        new_carret = Carriage(addr=addr)
+        player.carrets[carriage_id] = new_carret
 
         self.view.draw_carret_rect(
             new_carret.pos, player.brush, new_carret.addr)
 
-    def kill_carret(self, player_name, carret_name):
-        player = self.players[player_name]
-        carret = player.carrets[carret_name]
+    def kill_carret(self, player_id, carriage_id):
+        player = self.players[player_id]
+        carret = player.carrets[carriage_id]
 
-        del player.carrets[carret_name]
+        del player.carrets[carriage_id]
 
         self.view.erase_carret_rect(carret.pos)
 
-    def move_carret(self, player_name, carret_name, num_bytes):
-        player_this: Player = self.players[player_name]
-        carret_this: Carret = player_this.carrets[carret_name]
+    def move_carret(self, player_id, carriage_id, num_bytes):
+        player_this: Player = self.players[player_id]
+        carret_this: Carriage = player_this.carrets[carriage_id]
 
         repaint_carret = False
 
@@ -101,7 +102,7 @@ class CorewarStateManager:
         self.view.draw_carret_rect(
             carret_this.pos, player_this.brush, carret_this.addr)
 
-    def write_bytes(self, player_name, addr, bytes_str):
-        player: Player = self.players[player_name]
+    def write_bytes(self, player_id, addr, bytes_str):
+        player: Player = self.players[player_id]
 
         player.write_bytes(addr, bytes_str, self.view)

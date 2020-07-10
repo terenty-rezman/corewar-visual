@@ -22,38 +22,43 @@ def parser_for_command(id: str):
 
 @parser_for_command('p')
 def add_player(state_manager: CorewarStateManager, args: list):
-    player_name = args[0]
-    address = int(args[1])
-    bytes_str = args[2]
+    cycle = args[0]
+    player_id = args[1]
+    name = args[2]
+    address = int(args[3])
+    bytes_str = args[4]
 
-    state_manager.add_player(player_name)
-    state_manager.write_bytes(player_name, address, bytes_str)
+    state_manager.add_player(player_id, name)
+    state_manager.write_bytes(player_id, address, bytes_str)
 
 
 @parser_for_command('c')
 def add_carret(state_manager: CorewarStateManager, args: list):
-    player_name = args[0]
-    carret_name = args[1]
-    address = int(args[2])
+    cycle = args[0]
+    player_id = args[1]
+    carriage_id = args[2]
+    address = int(args[3])
 
-    state_manager.add_carret(player_name, carret_name, address)
+    state_manager.add_carret(player_id, carriage_id, address)
 
 
 @parser_for_command('k')
 def kill_carret(state_manager: CorewarStateManager, args: list):
-    player_name = args[0]
-    carret_name = args[1]
+    cycle = args[0]
+    player_id = args[1]
+    carriage_id = args[2]
 
-    state_manager.kill_carret(player_name, carret_name)
+    state_manager.kill_carret(player_id, carriage_id)
 
 
 @parser_for_command('m')
 def move_carret(state_manager: CorewarStateManager, args: list):
-    player_name = args[0]
-    carret_name = args[1]
-    offset = int(args[2])
+    cycle = args[0]
+    player_id = args[1]
+    carriage_id = args[2]
+    offset = int(args[3])
 
-    state_manager.move_carret(player_name, carret_name, offset)
+    state_manager.move_carret(player_id, carriage_id, offset)
 
 
 def unknown_command(line):
