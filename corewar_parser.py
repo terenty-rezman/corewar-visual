@@ -74,7 +74,7 @@ class CorewarParser:
     def __init__(self, corewar_state_manager: CorewarStateManager):
         self.state_manager = corewar_state_manager
 
-    def parser_corewar_output(self, line):
+    def parse_corewar_output(self, line):
         params = line.split(separator)
 
         # first param is the command id

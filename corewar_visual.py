@@ -30,7 +30,7 @@ if __name__ == "__main__":
     view = View()
     manager = CorewarStateManager(view.byte_view)
     parser = CorewarParser(manager)
-    stdin_listener = StdinListener(parser.parser_corewar_output, 500)
+    stdin_listener = StdinListener(parser.parse_corewar_output, 500)
 
     stdin_listener.start()
     view.show()

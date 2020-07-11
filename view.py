@@ -1,8 +1,8 @@
 from typing import List, Dict, Tuple
 
-from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, QSizePolicy, QScrollBar
+from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, QVBoxLayout, QSizePolicy, QScrollBar, QLabel
 from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics
-from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer
+from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer, QSize
 
 from colors import *
 
@@ -19,6 +19,8 @@ def pairs(string):
 
 
 class MouseScrolledArea(QScrollArea):
+    """scroll area that can be scrolled with mouse drag"""
+
     def mousePressEvent(self, ev):
         self.mouse_last_pos = ev.pos()
 
@@ -38,29 +40,105 @@ class MouseScrolledArea(QScrollArea):
         vertical.setValue(v_value + dy)
 
 
+class NotifyScrollbar(QScrollBar):
+    """scrollbar that notifies when hidden or shown """
+
+    shown = Signal(bool)
+
+    def showEvent(self, event):
+        self.shown.emit(True)
+
+    def hideEvent(self, event):
+        self.shown.emit(False)
+
+
+class ScrollsOverContentArea(MouseScrolledArea):
+    """ makes scrollbars shown above content
+        only to improve ui design
+    """
+    scrollsWidth = 8  # should follow up with your design
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setVerticalScrollBar(NotifyScrollbar())
+        self.setHorizontalScrollBar(NotifyScrollbar())
+
+        self.verticalScrollBar().shown.connect(self.vertical_scrollbar_shown)
+        self.horizontalScrollBar().shown.connect(self.horizontal_scrollbar_shown)
+
+    def vertical_scrollbar_shown(self, shown):
+        m = self.viewportMargins()
+        l = m.left()
+        t = m.top()
+        b = m.bottom()
+
+        if shown:
+            # make scrollbars above content
+            self.setViewportMargins(l, t, -self.scrollsWidth, b)
+        else:
+            # restore vieport margins
+            self.setViewportMargins(l, t, 0, b)
+
+    def horizontal_scrollbar_shown(self, shown):
+        m = self.viewportMargins()
+        l = m.left()
+        t = m.top()
+        r = m.right()
+
+        if shown:
+            # make scrollbars above content
+            self.setViewportMargins(l, t, r, -self.scrollsWidth)
+        else:
+            # restore vieport margins
+            self.setViewportMargins(l, t, r, 0)
+
+    def sizeHint(self):
+        """use size hint of the child widget"""
+        return self.widget().sizeHint()
+
+
 class View(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.byte_view = ByteView()
-        self.scroll_area = MouseScrolledArea()
-        self.layout = QHBoxLayout()
+        self.setWindowTitle("corewar visual")
 
+        self.byte_view = ByteView()
+
+        self.scroll_area = ScrollsOverContentArea()
         self.scroll_area.setWidget(self.byte_view)
-        self.scroll_area.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+
+        self.layout = QHBoxLayout()
+        self.layout.addStretch()  # add left stretch to main layout to center all content
         self.layout.addWidget(self.scroll_area)
+
+        self.add_ui()
+        self.layout.addStretch()  # add right stretch to main layout to center all content
+
         self.setLayout(self.layout)
 
         self.style()
 
+    def add_ui(self):
+        v_layout = QVBoxLayout()
+        v_layout.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        v_layout.addWidget(QLabel("cycle"))
+        v_layout.addWidget(QLabel("2015"))
+
+        v_layout.setContentsMargins(20, 0, 20, 0)
+        self.layout.addLayout(v_layout)
+
     def style(self):
         self.layout.setContentsMargins(0, 0, 0, 0)
-        # make scrollbars above content
-        self.scroll_area.setViewportMargins(0, 0, -8, -8)
+        self.layout.setSpacing(0)
+
+        self.scroll_area.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
 
         with open("stylesheet.qss") as file:
             stylesheet = file.read()
 
+        self.setObjectName("main")  # for proper styling
         self.setStyleSheet(stylesheet)
 
 
@@ -95,6 +173,9 @@ class ByteView(QWidget):
         self.setMinimumHeight(self.bytes_pixmap.height())
 
         self.render_empty_bytes_to_pixmap()
+
+    def sizeHint(self):
+        return QSize(self.bytes_pixmap.width(), self.bytes_pixmap.height())
 
     def compute_byte_rect(self):
         fm = QFontMetrics(self.font)

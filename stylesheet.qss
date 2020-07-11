@@ -1,6 +1,11 @@
+QWidget#main {
+    background: #1d1d1d;
+}
+
 QLabel {
-    color: #eeeeee;
-    font: 20px;
+    color: #4d4d4d;
+    font: 16px;
+    font-weight: bold;
 }
 
 QLabel#error {
@@ -15,12 +20,12 @@ QLabel#second {
 
 QFrame {
     border: none;
-    background: #1D1D1D;
+    background: #1d1d1d;
 }
 
 QScrollBar:vertical {
     border: none;
-    background-color: transparent;
+    background: transparent;
     width: 8px;
     margin: 0px;
     padding: 0px;
