@@ -8,6 +8,44 @@ QLabel {
     font-weight: bold;
 }
 
+QLabel[player="1"] {
+    color: #D34C75;
+}
+
+QLabel[player="1"][lighted="true"] {
+    color: #1d1d1d;
+    background:#D34C75;
+}
+
+QLabel[player="2"] {
+    color: #E9C13B;
+}
+
+QLabel[player="3"] {
+    color: #0A92AC;
+}
+
+QLabel[player="4"] {
+    color: #8662EA;
+}
+
+QLabel[dead="true"] {
+    text-decoration: line-through;
+}
+
+QLabel[lighted="true"] {
+    color: #D8DECA;
+}
+
+QLabel[status="paused"] {
+    color: #1d1d1d;
+    background: #FEFEF5;
+}
+
+QLabel[status="play"] {
+    color: #FEFEF5;
+}
+
 QLabel#error {
     color: #e91e63;
     font: 18px;

@@ -5,6 +5,7 @@ from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransfo
 from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer, QSize
 
 from colors import *
+from ui_widgets import *
 
 
 def pairs(string):
@@ -122,11 +123,15 @@ class View(QWidget):
 
     def add_ui(self):
         v_layout = QVBoxLayout()
+        v_layout.setSpacing(20)
         v_layout.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        v_layout.addWidget(QLabel("cycle"))
-        v_layout.addWidget(QLabel("2015"))
+        v_layout.addWidget(GameInfo())
+        v_layout.addWidget(PlayerInfo(1))
+        v_layout.addWidget(PlayerInfo(2))
+        v_layout.addWidget(PlayerInfo(3))
+        v_layout.addWidget(PlayerInfo(4))
 
-        v_layout.setContentsMargins(20, 0, 20, 0)
+        v_layout.setContentsMargins(20, 20, 20, 20)
         self.layout.addLayout(v_layout)
 
     def style(self):
