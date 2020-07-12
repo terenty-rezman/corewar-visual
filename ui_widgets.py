@@ -40,8 +40,8 @@ class GameInfo(QWidget):
         layout.setHorizontalSpacing(2)
         self.setLayout(layout)
 
-        self.status = QLabel("playing")
-        self.status.setProperty("status", "play")  # for stylesheet
+        self.status = QLabel("paused")
+        self.status.setProperty("status", "paused")  # for stylesheet
         self.status.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
         layout.addWidget(self.status, 0, 0)
 

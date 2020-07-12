@@ -7,7 +7,7 @@ command_parsers = {
     # dict of command parsers
     # filled through @parser_for_command decorator
     # e.g.
-    # 'k': kill_carret
+    # 'k': kill_cursor
 }
 
 
@@ -33,32 +33,32 @@ def add_player(state_manager: CorewarStateManager, args: list):
 
 
 @parser_for_command('c')
-def add_carret(state_manager: CorewarStateManager, args: list):
+def add_cursor(state_manager: CorewarStateManager, args: list):
     cycle = args[0]
     player_id = args[1]
     carriage_id = args[2]
     address = int(args[3])
 
-    state_manager.add_carret(player_id, carriage_id, address)
+    state_manager.add_cursor(player_id, carriage_id, address)
 
 
 @parser_for_command('k')
-def kill_carret(state_manager: CorewarStateManager, args: list):
+def kill_cursor(state_manager: CorewarStateManager, args: list):
     cycle = args[0]
     player_id = args[1]
     carriage_id = args[2]
 
-    state_manager.kill_carret(player_id, carriage_id)
+    state_manager.kill_cursor(player_id, carriage_id)
 
 
 @parser_for_command('m')
-def move_carret(state_manager: CorewarStateManager, args: list):
+def move_cursor(state_manager: CorewarStateManager, args: list):
     cycle = args[0]
     player_id = args[1]
     carriage_id = args[2]
     offset = int(args[3])
 
-    state_manager.move_carret(player_id, carriage_id, offset)
+    state_manager.move_cursor(player_id, carriage_id, offset)
 
 
 def unknown_command(line):
@@ -68,7 +68,7 @@ def unknown_command(line):
 class CorewarParser:
     """
     parses the output from corewar virtual machine.
-    updates the state of memory, players and carrets through state_manager
+    updates the state of memory, players and cursors through state_manager
     """
 
     def __init__(self, corewar_state_manager: CorewarStateManager):

@@ -1,7 +1,8 @@
 from typing import List, Dict, Tuple
+from dataclasses import dataclass
 
 from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, QVBoxLayout, QSizePolicy, QScrollBar, QLabel
-from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics
+from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics, QFont
 from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer, QSize
 
 from colors import *
@@ -98,6 +99,20 @@ class ScrollsOverContentArea(MouseScrolledArea):
         """use size hint of the child widget"""
         return self.widget().sizeHint()
 
+    def center_view(self):
+        vertical = self.verticalScrollBar()
+        horizontal = self.horizontalScrollBar()
+
+        ScrollsOverContentArea.center_scrollbar(horizontal)
+        ScrollsOverContentArea.center_scrollbar(vertical)
+
+    @staticmethod
+    def center_scrollbar(scrollbar: QScrollBar):
+        min = scrollbar.minimum()
+        max = scrollbar.maximum()
+
+        scrollbar.setValue((max - min) // 4)
+
 
 class View(QWidget):
     def __init__(self, parent=None):
@@ -120,6 +135,8 @@ class View(QWidget):
         self.setLayout(self.layout)
 
         self.style()
+
+        self.scroll_area.center_view()
 
     def add_ui(self):
         v_layout = QVBoxLayout()
@@ -147,17 +164,27 @@ class View(QWidget):
         self.setStyleSheet(stylesheet)
 
 
+@dataclass
+class MsgLines:
+    """
+    is used to remember lines occupied by msgs printed to byteview
+    in oreder to clear them when new one is going to be printed
+    """
+    start_line: int
+    line_count: int
+
+
 class ByteView(QWidget):
     """
-    Is used to draw memory, players and carrets state onto a widget
+    Is used to draw memory, players and cursors state onto a widget
     """
     byte_margin = 0
     byte_padding = 4
 
     test_curr_addr = 0
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.initialize()
         self.startTimer(1000/60)
@@ -168,16 +195,21 @@ class ByteView(QWidget):
         # font.setBold(True)
         self.font = font
 
+        self.font_bold = QFont(font)
+        self.font_bold.setBold(True)
+
         self.byte_rect = self.compute_byte_rect()
         self.byte_advance = self.compute_byte_advance()
         self.bytes_pixmap = self.create_pixmap(transparent=False)
         self.bytes_field = self.build_bytes_field()
-        self.carrets_pixmap = self.create_pixmap(transparent=True)
+        self.cursors_pixmap = self.create_pixmap(transparent=True)
 
         self.setMinimumWidth(self.bytes_pixmap.width())
         self.setMinimumHeight(self.bytes_pixmap.height())
 
         self.render_empty_bytes_to_pixmap()
+
+        self.prev_msg_lines = MsgLines(0, 0)
 
     def sizeHint(self):
         return QSize(self.bytes_pixmap.width(), self.bytes_pixmap.height())
@@ -212,11 +244,11 @@ class ByteView(QWidget):
 
         return l
 
-    def render_empty_bytes_to_pixmap(self):
+    def render_empty_bytes_to_pixmap(self, address=0, count=4096):
         pixmap_painter = QPainter(self.bytes_pixmap)
         pixmap_painter.setFont(self.font)
 
-        self.print_to_pixmap(pixmap_painter, 0, "00"*4096, PEN_EMPTY)
+        self.print_to_pixmap(pixmap_painter, address, "00"*count, PEN_EMPTY)
 
         pixmap_painter.end()
 
@@ -255,8 +287,8 @@ class ByteView(QWidget):
             painter.setPen(pen)
             painter.drawText(byte_rect, Qt.AlignCenter, f'{txt}')
 
-    def print_to_bytes_field(self, byte_addr, string, pen):
-        for digit1, digit2 in pairs(string):
+    def print_to_bytes_field(self, byte_addr, bytes_str, pen):
+        for digit1, digit2 in pairs(bytes_str):
             looped_addr = byte_addr % 4096
             txt = digit1 + digit2
             cell = self.bytes_field[looped_addr]
@@ -264,39 +296,76 @@ class ByteView(QWidget):
             cell[1] = pen
             byte_addr += 1
 
-    def draw_carret_rect(self, pos: Tuple[int, int], brush, addr):
-        painter = QPainter(self.carrets_pixmap)
+    def clear_last_msg(self):
+        # clear prev msg
+        prev_msg_start = self.prev_msg_lines.start_line * 64
+        prev_msg_bytes_count = self.prev_msg_lines.line_count * 64
 
-        carret_rect = QRect(self.byte_rect)
-        h = carret_rect.height()
+        self.render_empty_bytes_to_pixmap(prev_msg_start, prev_msg_bytes_count)
+
+    def print_msg(self, multiline_msg: str, pens_dict={}):
+        """
+        prints msg to byte cells vertically and horizontally centered
+        pens_dict specifies PEN to be used for specified line 
+        eg {0: PEN_WARNING} - line 0 will be painted with PEN_WARNING pen
+        """
+        self.clear_last_msg()
+
+        pixmap_painter = QPainter(self.bytes_pixmap)
+        pixmap_painter.setFont(self.font_bold)
+
+        lines = multiline_msg.splitlines()
+        row = 64 // 2 - len(lines) // 2  # centered vertically
+
+        # for clearing this msg when new one printed
+        self.prev_msg_lines = MsgLines(row, len(lines))
+
+        for index, line in enumerate(lines):
+            line = line.upper()
+            line = line.replace(' ', '_')
+            if len(line) % 2:  # odd
+                line += '_'
+
+            column = 64 // 2 - len(line) // 2 // 2  # centered horizontally
+            address = row * 64 + column
+
+            pen = pens_dict.get(index, PEN_LIGHT)
+            self.print_to_pixmap(pixmap_painter, address, line, pen)
+            row += 1
+
+    def draw_cursor_rect(self, pos: Tuple[int, int], brush, addr):
+        painter = QPainter(self.cursors_pixmap)
+
+        cursor_rect = QRect(self.byte_rect)
+        h = cursor_rect.height()
         i, j = pos
 
-        carret_rect.moveTopLeft(QPoint(i*self.byte_advance, j*h))
+        cursor_rect.moveTopLeft(QPoint(i*self.byte_advance, j*h))
 
         painter.setPen(Qt.NoPen)
         painter.setBrush(brush)
-        painter.drawRect(carret_rect)
+        painter.drawRect(cursor_rect)
 
         painter.setFont(self.font)
         txt = self.bytes_field[addr][0]
         painter.setPen(PEN_BCK)
-        painter.drawText(carret_rect, Qt.AlignCenter, f'{txt}')
+        painter.drawText(cursor_rect, Qt.AlignCenter, f'{txt}')
 
         painter.end()
 
-    def erase_carret_rect(self, pos: Tuple[int, int]):
-        painter = QPainter(self.carrets_pixmap)
+    def erase_cursor_rect(self, pos: Tuple[int, int]):
+        painter = QPainter(self.cursors_pixmap)
 
-        carret_rect = QRect(self.byte_rect)
-        h = carret_rect.height()
+        cursor_rect = QRect(self.byte_rect)
+        h = cursor_rect.height()
         i, j = pos
 
-        carret_rect.moveTopLeft(QPoint(i*self.byte_advance, j*h))
+        cursor_rect.moveTopLeft(QPoint(i*self.byte_advance, j*h))
 
         painter.setCompositionMode(QPainter.CompositionMode_Source)
         painter.setPen(Qt.NoPen)
         painter.setBrush(Qt.transparent)
-        painter.drawRect(carret_rect)
+        painter.drawRect(cursor_rect)
         painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
 
     def paintEvent(self, event):
@@ -309,9 +378,9 @@ class ByteView(QWidget):
         # draw memory view layer
         painter.drawPixmap(QPoint(), self.bytes_pixmap)
 
-        # draw carrets layer
-        painter.drawPixmap(QPoint(), self.carrets_pixmap)
+        # draw cursors layer
+        painter.drawPixmap(QPoint(), self.cursors_pixmap)
 
     def timerEvent(self, event):
-        # render bytes to pixmap
+        # render pixmaps to widget
         self.update()

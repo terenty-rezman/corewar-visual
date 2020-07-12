@@ -16,21 +16,21 @@ def add_player(cycle, player_id, name, address, bytes):
     )
 
 
-def add_carret(cycle, player_id, carret_id, address):
+def add_cursor(cycle, player_id, cursor_id, address):
     print(
-        f'c{sep}{cycle}{sep}{player_id}{sep}{carret_id}{sep}{address}'
+        f'c{sep}{cycle}{sep}{player_id}{sep}{cursor_id}{sep}{address}'
     )
 
 
-def kill_carret(cycle, player_id, carret_id):
+def kill_cursor(cycle, player_id, cursor_id):
     print(
-        f'k{sep}{cycle}{sep}{player_id}{sep}{carret_id}'
+        f'k{sep}{cycle}{sep}{player_id}{sep}{cursor_id}'
     )
 
 
-def move_carret(cycle, player_id, carret_id, offset):
+def move_cursor(cycle, player_id, cursor_id, offset):
     print(
-        f'm{sep}{cycle}{sep}{player_id}{sep}{carret_id}{sep}{offset}'
+        f'm{sep}{cycle}{sep}{player_id}{sep}{cursor_id}{sep}{offset}'
     )
 
 
@@ -49,14 +49,14 @@ add_player(1, 2, 'Robin', 64*10, "df01bb09")
 add_player(1, 3, 'Yoshi', 64*20, "47823958")
 add_player(1, 4, 'Mario', 64*50, "44ff55eeaabbcacd9933")
 
-add_carret(2, 1, 1, 0)  # player 1 adds carret 1
-add_carret(2, 2, 2, 64*10)  # player 2 adds carret 1
-add_carret(2, 3, 3, 64*20)  # player 3 adds carret 1
-add_carret(2, 4, 4, 64*50)  # player 4 adds carret 1
+add_cursor(2, 1, 1, 0)  # player 1 adds cursor 1
+add_cursor(2, 2, 2, 64*10)  # player 2 adds cursor 1
+add_cursor(2, 3, 3, 64*20)  # player 3 adds cursor 1
+add_cursor(2, 4, 4, 64*50)  # player 4 adds cursor 1
 
-add_carret(10, 1, 2, 64*13)  # player 1 adds carret 2
+add_cursor(10, 1, 2, 64*13)  # player 1 adds cursor 2
 
-move_carret(20, 1, 2, 4)  # move carret 2 of player 1
-move_carret(40, 1, 2, 4)  # move carret 2 of player 1
+move_cursor(20, 1, 2, 4)  # move cursor 2 of player 1
+move_cursor(40, 1, 2, 4)  # move cursor 2 of player 1
 
-kill_carret(50, 1, 2)  # kill carret 2 of player 1
+kill_cursor(50, 1, 2)  # kill cursor 2 of player 1

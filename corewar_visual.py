@@ -2,7 +2,7 @@
 
 import sys
 from random import random
-import functools
+from functools import partial
 
 from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import QTimer
@@ -24,15 +24,39 @@ def uncaught_exception_hook(exctype, value, tb):
 # catch KeyboardInterrupt event on top level
 sys.excepthook = uncaught_exception_hook
 
+
+def print_no_stdin_data_msg():
+    view.byte_view.print_msg(
+        "corewar 42\n\nno input on stdin",
+        {2: PEN_WARNING}
+    )
+
+
+def print_controls_info_msg():
+    view.byte_view.print_msg(
+        "corewar 42\n\npress \"space\" to run/pause the simulation\n"
+        "+- to speed up/slow down\n \"D\" next step paused"
+    )
+
+
+def on_stdin_data(line: str):
+    if line == "start":
+        print_controls_info_msg()
+    else:
+        parser.parse_corewar_output(line)
+
+
 if __name__ == "__main__":
     app = QApplication()
 
     view = View()
     manager = CorewarStateManager(view.byte_view)
     parser = CorewarParser(manager)
-    stdin_listener = StdinListener(parser.parse_corewar_output, 500)
+    stdin_listener = StdinListener(on_stdin_data, 1)
 
-    stdin_listener.start()
+    print_no_stdin_data_msg()
+
+    stdin_listener.start_paused()
     view.show()
 
     sys.exit(app.exec_())

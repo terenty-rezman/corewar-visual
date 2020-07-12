@@ -15,6 +15,8 @@ QCOLOR_EMPTY = QColor(COLOR_EMPTY)
 PEN_EMPTY = QPen(QCOLOR_EMPTY)
 PEN_BLACK = QPen(QColor("#000"))
 PEN_BCK = QPen("#2D2D2D")
+PEN_LIGHT = QPen("#8A9199")
+PEN_WARNING = QPen("#C3486B")
 
 next_pen = itertools.cycle(pens)
 next_brush = itertools.cycle(brushes)

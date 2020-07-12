@@ -28,7 +28,7 @@ class Player:
         self.name = name
         self.pen = pen
         self.brush = brush
-        self.carrets: Dict[str, Carriage] = dict()
+        self.cursors: Dict[str, Carriage] = dict()
 
     def write_bytes(self, addr, bytes_str, view):
         view.write_bytes(addr, bytes_str, self.pen)
@@ -36,7 +36,7 @@ class Player:
 
 class CorewarStateManager:
     """
-    represents current state of memory, players and carrets.
+    represents current state of memory, players and cursors.
     uses view to draw the state
     """
 
@@ -50,57 +50,57 @@ class CorewarStateManager:
 
         self.players[id] = Player(name, next(next_pen), next(next_brush))
 
-    def add_carret(self, player_id, carriage_id, addr):
+    def add_cursor(self, player_id, carriage_id, addr):
         player = self.players[player_id]
 
-        if carriage_id in player.carrets:
-            raise Exception(carriage_id + " carret already exists")
+        if carriage_id in player.cursors:
+            raise Exception(carriage_id + " carriage already exists")
 
-        new_carret = Carriage(addr=addr)
-        player.carrets[carriage_id] = new_carret
+        new_cursor = Carriage(addr=addr)
+        player.cursors[carriage_id] = new_cursor
 
-        self.view.draw_carret_rect(
-            new_carret.pos, player.brush, new_carret.addr)
+        self.view.draw_cursor_rect(
+            new_cursor.pos, player.brush, new_cursor.addr)
 
-    def kill_carret(self, player_id, carriage_id):
+    def kill_cursor(self, player_id, carriage_id):
         player = self.players[player_id]
-        carret = player.carrets[carriage_id]
+        cursor = player.cursors[carriage_id]
 
-        del player.carrets[carriage_id]
+        del player.cursors[carriage_id]
 
-        self.view.erase_carret_rect(carret.pos)
+        self.view.erase_cursor_rect(cursor.pos)
 
-    def move_carret(self, player_id, carriage_id, num_bytes):
+    def move_cursor(self, player_id, carriage_id, num_bytes):
         player_this: Player = self.players[player_id]
-        carret_this: Carriage = player_this.carrets[carriage_id]
+        cursor_this: Carriage = player_this.cursors[carriage_id]
 
-        repaint_carret = False
+        repaint_cursor = False
 
-        # check if any other carrets on the same pos as carret_this
-        # if so erase old carret pos with other carret's brush
+        # check if any other cursors on the same pos as cursor_this
+        # if so erase old cursor pos with other cursor's brush
         for player in self.players.values():
-            for carret in player.carrets.values():
-                if carret != carret_this:
-                    if carret.i == carret_this.i and carret.j == carret_this.j:
-                        repaint_carret = True
+            for cursor in player.cursors.values():
+                if cursor != cursor_this:
+                    if cursor.i == cursor_this.i and cursor.j == cursor_this.j:
+                        repaint_cursor = True
                         brush = player.brush
                         break
             else:
                 continue
             break
 
-        # erase carret from old pos
-        if repaint_carret:
-            self.view.draw_carret_rect(
-                carret_this.pos, brush, carret_this.addr)
+        # erase cursor from old pos
+        if repaint_cursor:
+            self.view.draw_cursor_rect(
+                cursor_this.pos, brush, cursor_this.addr)
         else:
-            self.view.erase_carret_rect(carret_this.pos)
+            self.view.erase_cursor_rect(cursor_this.pos)
 
-        carret_this.addr += num_bytes
+        cursor_this.addr += num_bytes
 
-        # draw carret at new pos
-        self.view.draw_carret_rect(
-            carret_this.pos, player_this.brush, carret_this.addr)
+        # draw cursor at new pos
+        self.view.draw_cursor_rect(
+            cursor_this.pos, player_this.brush, cursor_this.addr)
 
     def write_bytes(self, player_id, addr, bytes_str):
         player: Player = self.players[player_id]
