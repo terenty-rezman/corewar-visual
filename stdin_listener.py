@@ -21,7 +21,7 @@ class StdinListener:
 
         self.timer = QTimer()
         self.timeout = check_interval_ms
-        self.timer.timeout.connect(self.check_queue)
+        self.timer.timeout.connect(self.read_queue)
 
         self.stdin_line_queue = queue.Queue()
         self.parallel_reader = threading.Thread(
@@ -40,7 +40,7 @@ class StdinListener:
         self.timer.start(self.timeout)
         self.parallel_reader.start()
 
-    def check_queue(self):
+    def read_queue(self):
         """
         check if any line in queue then extract all lines for this cycle and send it to callback
         sends "start" notification on first run whe some data arrives from stdin
@@ -51,8 +51,11 @@ class StdinListener:
                 self.read_started = True
 
             if(not self.paused):
-                cycle, lines = self.get_lines_one_cycle()
-                self.callback(cycle, lines)
+                self.read_next_cycle()
+
+    def read_next_cycle(self):
+        cycle, lines = self.get_lines_one_cycle()
+        self.callback(cycle, lines)
 
     def get_lines_one_cycle(self):
         """extracts all lines for one cycle, if next cycle occurs returns"""
@@ -68,7 +71,7 @@ class StdinListener:
             try:
                 # parse cycle number from line
                 line = self.stdin_line_queue.get(block=False)
-                m = re.search(r'"\d+"', line)
+                m = re.search(r'(?<=")\d+(?=")', line)
                 cycle = m.group()
 
                 if not current_cycle:

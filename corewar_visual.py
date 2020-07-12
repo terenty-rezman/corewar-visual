@@ -45,9 +45,18 @@ def run_or_pause():
     view.set_paused(stdin_listener.paused)
 
 
+def read_next_cycle():
+    if not stdin_listener.paused:
+        stdin_listener.set_paused(True)
+        view.set_paused(True)
+
+    stdin_listener.read_next_cycle()
+
+
 def on_key_pressed(key: str):
     actions = {
         " ": run_or_pause,
+        "d": read_next_cycle
     }
 
     action = actions.get(key, lambda: None)
@@ -55,6 +64,8 @@ def on_key_pressed(key: str):
 
 
 def on_stdin_data(cycle: int, data: str or List[str]):
+    view.set_cycle(cycle)
+
     if isinstance(data, str) and data == "start":
         print_controls_info_msg()
     else:

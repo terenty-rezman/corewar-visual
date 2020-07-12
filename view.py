@@ -146,6 +146,7 @@ class View(QWidget):
         self.write_bytes = self.byte_view.write_bytes
         self.print_msg = self.byte_view.print_msg
         self.set_paused = self.game_info.set_paused
+        self.set_cycle = self.game_info.set_cycle
 
     def add_ui(self):
         v_layout = QVBoxLayout()

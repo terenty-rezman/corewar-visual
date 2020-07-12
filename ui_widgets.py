@@ -23,14 +23,14 @@ class PlayerInfo(QWidget):
         layout.setVerticalSpacing(0)
         self.setLayout(layout)
 
-        layout.addWidget(QLabel(f"Player #{player_number}"), 0, 0)
+        layout.addWidget(QLabel(f"player #{player_number}"), 0, 0)
 
         self.name_widget = QLabel("Batman")
         self.name_widget.setProperty("player", player_number)  # for stylesheet
         self.name_widget.setProperty("dead", True)
         layout.addWidget(self.name_widget, 0, 1)
 
-        layout.addWidget(QLabel(f"Cursors:"), 1, 0)
+        layout.addWidget(QLabel(f"cursors:"), 1, 0)
 
         self.cursor_number = QLabel("0")
         self.cursor_number.setProperty(
@@ -55,13 +55,19 @@ class GameInfo(QWidget):
         self.status = QLabel("paused")
         self.status.setProperty("status", "paused")  # for stylesheet
         self.status.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        z = self.status.sizeHint().width()
+        layout.setColumnMinimumWidth(0, 70)
         layout.addWidget(self.status, 0, 0)
 
-        layout.addWidget(QLabel("Cycle #"), 1, 0)
+        layout.addWidget(QLabel("speed"), 1, 0)
+        self.speed = QLabel("1")
+        self.speed.setProperty("lighted", True)  # for stylesheet
+        layout.addWidget(self.speed, 1, 1)
 
+        layout.addWidget(QLabel("cycle"), 2, 0)
         self.cycle_number = QLabel("0")
         self.cycle_number.setProperty("lighted", True)  # for stylesheet
-        layout.addWidget(self.cycle_number, 1, 1)
+        layout.addWidget(self.cycle_number, 2, 1)
 
     def set_paused(self, paused: bool):
         self.status.setText("paused" if paused else "playing")
@@ -72,3 +78,6 @@ class GameInfo(QWidget):
 
     def set_cycle(self, cycle: int):
         self.cycle_number.setText(str(cycle))
+
+    def set_speed(self, speed: int):
+        self.speed.setText(str(speed))
