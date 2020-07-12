@@ -1,3 +1,5 @@
+from typing import List
+
 from corewar_state_manager import CorewarStateManager
 
 # separator symbol
@@ -84,17 +86,18 @@ class CorewarParser:
     def __init__(self, corewar_state_manager: CorewarStateManager):
         self.state_manager = corewar_state_manager
 
-    def parse_corewar_output(self, line):
-        params = line.split(separator)
+    def parse_corewar_output(self, lines: List[str]):
+        for line in lines:
+            tokens = line.split(separator)
 
-        # first param is the command id
-        command_id = params[0]
-        # the rest of the params are arguments to the command
-        args = params[1:]
+            # first token is the command id
+            command_id = tokens[0]
+            # the rest of the tokens are arguments to the command
+            args = tokens[1:]
 
-        parse_fcn = command_parsers.get(command_id, None)
+            parse_fcn = command_parsers.get(command_id, None)
 
-        if parse_fcn:
-            parse_fcn(self.state_manager, args)
-        else:
-            unknown_command(line)
+            if parse_fcn:
+                parse_fcn(self.state_manager, args)
+            else:
+                unknown_command(line)

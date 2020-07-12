@@ -1,21 +1,23 @@
 import sys
 import threading
 import queue
+import re
 
 from PySide2.QtCore import QTimer
 
 
 class StdinListener:
-    """ 
+    """
     1) runs a thread that reads stdin in parallel and puts any data read into a queue
     2) runs a timer in gui thread that periodically checks the queue
-       and if theres some data -> calls the callback with line by line data from the queue
+       and if theres some data -> calls the callback with lines belonging to one cycle of corewar vm
        on first run calls callback with "start" as a notification about data having started arriving on stdin
     """
 
     def __init__(self, callback, check_interval_ms=1000):
         self.callback = callback
         self.read_started = False
+        self.line_next_cycle = None
 
         self.timer = QTimer()
         self.timeout = check_interval_ms
@@ -40,16 +42,51 @@ class StdinListener:
 
     def check_queue(self):
         """
-        check if any line in queue and call the callback with one line from queue
+        check if any line in queue then extract all lines for this cycle and send it to callback
         sends "start" notification on first run whe some data arrives from stdin
         """
         if not self.stdin_line_queue.empty():
             if not self.read_started:
-                self.callback("start")
+                self.callback(0, "start")
                 self.read_started = True
 
             if(not self.paused):
-                self.callback(self.stdin_line_queue.get())
+                cycle, lines = self.get_lines_one_cycle()
+                self.callback(cycle, lines)
+
+    def get_lines_one_cycle(self):
+        """extracts all lines for one cycle, if next cycle occurs returns"""
+        current_cycle = None
+        lines = []
+
+        # pick up where we ended last time
+        if self.line_next_cycle:
+            lines.append(self.line_next_cycle)
+            self.line_next_cycle = None
+
+        while True:
+            try:
+                # parse cycle number from line
+                line = self.stdin_line_queue.get(block=False)
+                m = re.search(r'"\d+"', line)
+                cycle = m.group()
+
+                if not current_cycle:
+                    current_cycle = cycle
+
+                # remember current line as it belongs to next cycle
+                # and should be processed next time
+                if cycle != current_cycle:
+                    self.line_next_cycle = line
+                    break
+
+                lines.append(line)
+
+            except queue.Empty:
+                print("empty")
+                break
+
+        return cycle, lines
 
     def set_interval(self, interval_ms):
         self.timeout = interval_ms

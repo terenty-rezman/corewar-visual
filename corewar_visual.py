@@ -3,6 +3,7 @@
 import sys
 from random import random
 from functools import partial
+from typing import List
 
 from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import QTimer
@@ -53,11 +54,11 @@ def on_key_pressed(key: str):
     action()
 
 
-def on_stdin_data(line: str):
-    if line == "start":
+def on_stdin_data(cycle: int, data: str or List[str]):
+    if isinstance(data, str) and data == "start":
         print_controls_info_msg()
     else:
-        parser.parse_corewar_output(line)
+        parser.parse_corewar_output(data)
 
 
 if __name__ == "__main__":
@@ -69,7 +70,7 @@ if __name__ == "__main__":
 
     manager = CorewarStateManager(view)
     parser = CorewarParser(manager)
-    stdin_listener = StdinListener(on_stdin_data, 1)
+    stdin_listener = StdinListener(on_stdin_data, 100)
 
     print_no_stdin_data_msg()
 
