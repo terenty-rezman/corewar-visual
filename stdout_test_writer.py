@@ -3,6 +3,7 @@
 import time
 import sys
 import functools
+import random
 
 # this script emulates output of corewar vm to stdout
 # used to test corewar_visual in abscence of corewar vm
@@ -60,3 +61,19 @@ move_cursor(20, 1, 2, 4)  # move cursor 2 of player 1
 move_cursor(40, 1, 2, 4)  # move cursor 2 of player 1
 
 kill_cursor(50, 1, 2)  # kill cursor 2 of player 1
+
+for i in range(2000):
+    move_cursor(40 + i, 1, 1, 4)  # move cursor 2 of player 1
+    write_memory(40 + i, 1, i * 6 + random.randint(0, 10), "AAFF01Baedf0")
+
+    move_cursor(40 + i, 2, 2, 2)  # move cursor 2 of player 1
+    write_memory(40 + i, 2, 64*10 + i * 6 +
+                 random.randint(0, 10), "BB162fab08")
+
+    move_cursor(40 + i, 3, 3, 3)  # move cursor 2 of player 1
+    write_memory(40 + i, 3, 64*20 - i * 7 +
+                 random.randint(0, 10), "17aa3891fe")
+
+    move_cursor(40 + i, 4, 4, 8)  # move cursor 2 of player 1
+    write_memory(40 + i, 4, 64*50 + i * 10 +
+                 random.randint(0, 10), "6D6F64652E0D0D0A2401")

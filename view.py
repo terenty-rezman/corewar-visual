@@ -115,6 +115,8 @@ class ScrollsOverContentArea(MouseScrolledArea):
 
 
 class View(QWidget):
+    key_pressed = Signal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -138,11 +140,21 @@ class View(QWidget):
 
         self.scroll_area.center_view()
 
+        # make references to byte_view functions availible on self
+        self.draw_cursor_rect = self.byte_view.draw_cursor_rect
+        self.erase_cursor_rect = self.byte_view.erase_cursor_rect
+        self.write_bytes = self.byte_view.write_bytes
+        self.print_msg = self.byte_view.print_msg
+        self.set_paused = self.game_info.set_paused
+
     def add_ui(self):
         v_layout = QVBoxLayout()
         v_layout.setSpacing(20)
         v_layout.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        v_layout.addWidget(GameInfo())
+
+        self.game_info = GameInfo()
+        v_layout.addWidget(self.game_info)
+
         v_layout.addWidget(PlayerInfo(1))
         v_layout.addWidget(PlayerInfo(2))
         v_layout.addWidget(PlayerInfo(3))
@@ -162,6 +174,16 @@ class View(QWidget):
 
         self.setObjectName("main")  # for proper styling
         self.setStyleSheet(stylesheet)
+
+    def keyPressEvent(self, ev):
+        if ev.key() == Qt.Key_Space:
+            self.key_pressed.emit(" ")
+        elif ev.key() == Qt.Key_D:
+            self.key_pressed.emit("d")
+        elif ev.key() == Qt.Key_Plus:
+            self.key_pressed.emit("+")
+        elif ev.key() == Qt.Key_Minus:
+            self.key_pressed.emit("-")
 
 
 @dataclass

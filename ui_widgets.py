@@ -1,5 +1,17 @@
-from PySide2.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QSizePolicy
-from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QSizePolicy, QApplication
+from PySide2.QtCore import Qt, QEvent
+
+
+def update_stylesheet(widget):
+    """
+    dirty hack to force style recalc
+    needed to react to changing properties
+    """
+    widget.style().unpolish(widget)
+    widget.style().polish(widget)
+    evt = QEvent(QEvent.StyleChange)
+    QApplication.sendEvent(widget, evt)
+    widget.update()
 
 
 class PlayerInfo(QWidget):
@@ -47,6 +59,16 @@ class GameInfo(QWidget):
 
         layout.addWidget(QLabel("Cycle #"), 1, 0)
 
-        self.cycle_number = QLabel("232")
+        self.cycle_number = QLabel("0")
         self.cycle_number.setProperty("lighted", True)  # for stylesheet
         layout.addWidget(self.cycle_number, 1, 1)
+
+    def set_paused(self, paused: bool):
+        self.status.setText("paused" if paused else "playing")
+        self.status.setProperty(
+            "status", "paused" if paused else "play")  # for stylesheet
+
+        update_stylesheet(self.status)
+
+    def set_cycle(self, cycle: int):
+        self.cycle_number.setText(str(cycle))

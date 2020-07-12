@@ -61,6 +61,16 @@ def move_cursor(state_manager: CorewarStateManager, args: list):
     state_manager.move_cursor(player_id, carriage_id, offset)
 
 
+@parser_for_command('w')
+def write_memory(state_manager: CorewarStateManager, args: list):
+    cycle = args[0]
+    player_id = args[1]
+    address = int(args[2])
+    bytes = args[3]
+
+    state_manager.write_bytes(player_id, address, bytes)
+
+
 def unknown_command(line):
     print("unknown command: " + line)
 
