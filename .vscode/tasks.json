@@ -7,6 +7,7 @@
             "label": "vm > feed.txt",
             "type": "shell",
             "windows": {
+                "command": "vm_output_emu.py > vm_feed.txt",
                 "options": {
                     "shell": {
                         "executable": "cmd.exe",
@@ -17,13 +18,14 @@
                     }
                 }
             },
-            "command": "vm_output_emu.py > vm_feed.txt",
+            "command": "python3 ./vm_output_emu.py > vm_feed.txt",
             "problemMatcher": []
         },
         {
             "label": "debug corewar < feed.txt",
             "type": "shell",
             "windows": {
+                "command": "python -m debugpy --listen 15678 ./corewar_visual.py < vm_feed.txt",
                 "options": {
                     "shell": {
                         "executable": "cmd.exe",
@@ -34,13 +36,14 @@
                     }
                 }
             },
-            "command": "python -m debugpy --listen 15678 ./corewar_visual.py < vm_feed.txt",
+            "command": "python3 -m debugpy --listen 15678 ./corewar_visual.py < vm_feed.txt",
             "problemMatcher": []
         },
         {
             "label": "vm | corewar",
             "type": "shell",
             "windows": {
+                "command": "vm_output_emu.py | corewar_visual.py",
                 "options": {
                     "shell": {
                         "executable": "cmd.exe",
@@ -51,7 +54,7 @@
                     }
                 }
             },
-            "command": "vm_output_emu.py | corewar_visual.py",
+            "command": "python3 ./vm_output_emu.py | python3 ./corewar_visual.py",
             "problemMatcher": []
         }
     ]
