@@ -5,11 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "start corewar",
             "type": "python",
             "request": "launch",
             "program": "corewar_visual.py",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "attach to corewar",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 15678
+            }
         }
     ]
 }

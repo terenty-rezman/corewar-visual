@@ -49,6 +49,7 @@ class CorewarStateManager:
             raise Exception(name + " player already exists")
 
         self.players[id] = Player(name, next(next_pen), next(next_brush))
+        self.view.add_player(name[:8])
 
     def add_cursor(self, player_id, carriage_id, addr):
         player = self.players[player_id]

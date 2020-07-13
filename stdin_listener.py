@@ -6,6 +6,12 @@ import re
 from PySide2.QtCore import QTimer
 
 
+def extract_cycle(line: str):
+    m = re.search(r'(?<=")\d+(?=")', line)
+    cycle = m.group()
+    return cycle
+
+
 class StdinListener:
     """
     1) runs a thread that reads stdin in parallel and puts any data read into a queue
@@ -65,14 +71,14 @@ class StdinListener:
         # pick up where we ended last time
         if self.line_next_cycle:
             lines.append(self.line_next_cycle)
+            current_cycle = extract_cycle(self.line_next_cycle)
             self.line_next_cycle = None
 
         while True:
             try:
                 # parse cycle number from line
                 line = self.stdin_line_queue.get(block=False)
-                m = re.search(r'(?<=")\d+(?=")', line)
-                cycle = m.group()
+                cycle = extract_cycle(line)
 
                 if not current_cycle:
                     current_cycle = cycle
@@ -89,7 +95,7 @@ class StdinListener:
                 print("empty")
                 break
 
-        return cycle, lines
+        return current_cycle, lines
 
     def set_interval(self, interval_ms):
         self.timeout = interval_ms

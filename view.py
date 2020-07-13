@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, QVBoxLayout, QSizePolicy, QScrollBar, QLabel
 from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics, QFont
-from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer, QSize
+from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer, QSize, QSettings
 
 from colors import *
 from ui_widgets import *
@@ -111,7 +111,7 @@ class ScrollsOverContentArea(MouseScrolledArea):
         min = scrollbar.minimum()
         max = scrollbar.maximum()
 
-        scrollbar.setValue((max - min) // 4)
+        scrollbar.setValue((max - min) // 2)
 
 
 class View(QWidget):
@@ -119,6 +119,9 @@ class View(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.first_show = True  # to apply center view on byte view
+        self.players_count = 0
+        self.player_widgets = []
 
         self.setWindowTitle("corewar visual")
 
@@ -138,8 +141,6 @@ class View(QWidget):
 
         self.style()
 
-        self.scroll_area.center_view()
-
         # make references to byte_view functions availible on self
         self.draw_cursor_rect = self.byte_view.draw_cursor_rect
         self.erase_cursor_rect = self.byte_view.erase_cursor_rect
@@ -148,21 +149,59 @@ class View(QWidget):
         self.set_paused = self.game_info.set_paused
         self.set_cycle = self.game_info.set_cycle
 
+        self.readSettings()
+
     def add_ui(self):
-        v_layout = QVBoxLayout()
-        v_layout.setSpacing(20)
-        v_layout.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        grid = QGridLayout()
+        grid.setSpacing(8)
+        grid.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
+        # unpack widgets to put them into one grid layout
         self.game_info = GameInfo()
-        v_layout.addWidget(self.game_info)
+        widget = iter(self.game_info)
 
-        v_layout.addWidget(PlayerInfo(1))
-        v_layout.addWidget(PlayerInfo(2))
-        v_layout.addWidget(PlayerInfo(3))
-        v_layout.addWidget(PlayerInfo(4))
+        grid.addWidget(next(widget), 0, 0)
+        grid.addWidget(next(widget), 1, 0)
+        grid.addWidget(next(widget), 1, 1)
+        grid.addWidget(next(widget), 2, 0)
+        grid.addWidget(next(widget), 2, 1)
 
-        v_layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.addLayout(v_layout)
+        grid.setRowMinimumHeight(3, 20)
+
+        player1 = PlayerInfo(1)
+        i = self.unpack_player_widget_to_grid(player1, grid, 4)
+
+        player2 = PlayerInfo(2)
+        i = self.unpack_player_widget_to_grid(player2, grid, i + 1)
+
+        player3 = PlayerInfo(3)
+        i = self.unpack_player_widget_to_grid(player3, grid, i + 1)
+
+        player4 = PlayerInfo(4)
+        i = self.unpack_player_widget_to_grid(player4, grid, i + 1)
+
+        player1.set_visible(False)
+        player2.set_visible(False)
+        player3.set_visible(False)
+        player4.set_visible(False)
+
+        self.player_widgets = [player1, player2, player3, player4]
+
+        grid.setColumnMinimumWidth(1, 100)
+        grid.setContentsMargins(20, 20, 20, 20)
+        self.layout.addLayout(grid)
+
+    def unpack_player_widget_to_grid(self, widget, grid, i):
+        widget = iter(widget)
+
+        grid.addWidget(next(widget), i, 0)
+        grid.addWidget(next(widget), i, 1)
+        grid.addWidget(next(widget), i+1, 0)
+        grid.addWidget(next(widget), i+1, 1)
+
+        grid.setRowMinimumHeight(i+2, 20)
+
+        return i+3
 
     def style(self):
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -185,6 +224,51 @@ class View(QWidget):
             self.key_pressed.emit("+")
         elif ev.key() == Qt.Key_Minus:
             self.key_pressed.emit("-")
+
+    def showEvent(self, evt):
+        if self.first_show:
+            self.scroll_area.center_view()
+            self.first_show = False
+
+    def closeEvent(self, evt):
+        self.writeSettings()
+
+    def readSettings(self):
+        # restore window position
+        settings = QSettings("settings.ini", QSettings.IniFormat)
+        screen_rect = QApplication.desktop().screenGeometry()
+        default_rect = QRect(
+            screen_rect.width() // 6,
+            screen_rect.height() // 4,
+            screen_rect.width() * 2 // 3,
+            screen_rect.height() // 2
+        )
+        geometry = settings.value("geometry", default_rect)
+        self.setGeometry(geometry)
+
+        maximized = settings.value("maximized", False)
+        if maximized == "true":
+            wstate = self.windowState()
+            self.setWindowState(wstate | Qt.WindowMaximized)
+
+    def writeSettings(self):
+        # remeber window position
+        settings = QSettings("settings.ini", QSettings.IniFormat)
+
+        if not self.isMaximized():
+            settings.setValue("geometry", self.geometry())
+
+        settings.setValue("maximized", self.isMaximized())
+
+    def add_player(self, name: str):
+        index = self.players_count
+
+        player = self.player_widgets[index]
+
+        player.set_visible(True)
+        player.set_name(name)
+
+        self.players_count += 1
 
 
 @dataclass

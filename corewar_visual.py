@@ -11,8 +11,8 @@ from PySide2.QtCore import QTimer
 from stdin_listener import StdinListener
 from colors import *
 from view import View
-from corewar_state_manager import CorewarStateManager
-from corewar_parser import CorewarParser
+from state_manager import CorewarStateManager
+from cw_parser import CorewarParser
 
 
 def uncaught_exception_hook(exctype, value, tb):
@@ -36,7 +36,7 @@ def print_no_stdin_data_msg():
 def print_controls_info_msg():
     view.print_msg(
         "corewar 42\n\npress \"space\" to run/pause the simulation\n"
-        "+- to speed up/slow down\n \"D\" next step paused"
+        "+-to speed up/slow down\n\"D\" next step paused"
     )
 
 

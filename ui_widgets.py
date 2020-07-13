@@ -14,23 +14,24 @@ def update_stylesheet(widget):
     widget.update()
 
 
+def retain_size_when_hidden(widgets):
+    for widget in widgets:
+        sp = widget.sizePolicy()
+        sp.setRetainSizeWhenHidden(True)
+        widget.setSizePolicy(sp)
+
+
 class PlayerInfo(QWidget):
     def __init__(self, player_number, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        layout = QGridLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setVerticalSpacing(0)
-        self.setLayout(layout)
+        self.player_title = QLabel(f"player #{player_number}")
 
-        layout.addWidget(QLabel(f"player #{player_number}"), 0, 0)
+        self.player_name = QLabel("Batman")
+        self.player_name.setProperty("player", player_number)  # for stylesheet
+        self.player_name.setProperty("dead", True)
 
-        self.name_widget = QLabel("Batman")
-        self.name_widget.setProperty("player", player_number)  # for stylesheet
-        self.name_widget.setProperty("dead", True)
-        layout.addWidget(self.name_widget, 0, 1)
-
-        layout.addWidget(QLabel(f"cursors:"), 1, 0)
+        self.cursors_title = QLabel(f"cursors:")
 
         self.cursor_number = QLabel("0")
         self.cursor_number.setProperty(
@@ -39,35 +40,40 @@ class PlayerInfo(QWidget):
             "lighted", True)
         self.cursor_number.setSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Preferred)
-        layout.addWidget(self.cursor_number, 1, 1)
+
+        retain_size_when_hidden(self)
+
+    def __iter__(self):
+        return iter((self.player_title, self.player_name, self.cursors_title, self.cursor_number))
+
+    def set_visible(self, visible: bool):
+        for widget in self:
+            widget.setVisible(visible)
+
+    def set_name(self, name: str):
+        self.player_name.setText(name)
+
+    def set_cursors_count(self, count: int):
+        self.cursor_number.setText(str(count))
 
 
 class GameInfo(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        layout = QGridLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setVerticalSpacing(10)
-        layout.setHorizontalSpacing(2)
-        self.setLayout(layout)
-
         self.status = QLabel("paused")
         self.status.setProperty("status", "paused")  # for stylesheet
         self.status.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        z = self.status.sizeHint().width()
-        layout.setColumnMinimumWidth(0, 70)
-        layout.addWidget(self.status, 0, 0)
 
-        layout.addWidget(QLabel("speed"), 1, 0)
-        self.speed = QLabel("1")
-        self.speed.setProperty("lighted", True)  # for stylesheet
-        layout.addWidget(self.speed, 1, 1)
+        self.speed_title = QLabel("speed")
+        self.speed_value = QLabel("1")
+        self.speed_value.setProperty("lighted", True)  # for stylesheet
 
-        layout.addWidget(QLabel("cycle"), 2, 0)
+        self.cycle_title = QLabel("cycle")
         self.cycle_number = QLabel("0")
         self.cycle_number.setProperty("lighted", True)  # for stylesheet
-        layout.addWidget(self.cycle_number, 2, 1)
+
+        retain_size_when_hidden(self)
 
     def set_paused(self, paused: bool):
         self.status.setText("paused" if paused else "playing")
@@ -81,3 +87,6 @@ class GameInfo(QWidget):
 
     def set_speed(self, speed: int):
         self.speed.setText(str(speed))
+
+    def __iter__(self):
+        return iter((self.status, self.speed_title, self.speed_value, self.cycle_title, self.cycle_number))

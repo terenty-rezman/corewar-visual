@@ -1,0 +1,58 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "vm > feed.txt",
+            "type": "shell",
+            "windows": {
+                "options": {
+                    "shell": {
+                        "executable": "cmd.exe",
+                        "args": [
+                            "/d",
+                            "/c"
+                        ]
+                    }
+                }
+            },
+            "command": "vm_test_output.py > vm_feed.txt",
+            "problemMatcher": []
+        },
+        {
+            "label": "debug corewar < feed.txt",
+            "type": "shell",
+            "windows": {
+                "options": {
+                    "shell": {
+                        "executable": "cmd.exe",
+                        "args": [
+                            "/d",
+                            "/c"
+                        ]
+                    }
+                }
+            },
+            "command": "python -m debugpy --listen 15678 ./corewar_visual.py < vm_feed.txt",
+            "problemMatcher": []
+        },
+        {
+            "label": "vm | corewar",
+            "type": "shell",
+            "windows": {
+                "options": {
+                    "shell": {
+                        "executable": "cmd.exe",
+                        "args": [
+                            "/d",
+                            "/c"
+                        ]
+                    }
+                }
+            },
+            "command": "vm_test_output.py | corewar_visual.py",
+            "problemMatcher": []
+        }
+    ]
+}
