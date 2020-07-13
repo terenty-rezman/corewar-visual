@@ -5,8 +5,8 @@ from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, Q
 from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics, QFont
 from PySide2.QtCore import QObject, QRect, QRectF, QPoint, QPointF, Slot, Signal, Qt, QTimer, QSize, QSettings
 
-from colors import *
-from ui_widgets import *
+from cw_visual.colors import *
+from cw_visual.ui_widgets import *
 
 
 def pairs(string):
@@ -210,7 +210,7 @@ class View(QWidget):
 
         self.scroll_area.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
 
-        with open("stylesheet.qss") as file:
+        with open("cw_visual/stylesheet.qss") as file:
             stylesheet = file.read()
 
         self.setObjectName("main")  # for proper styling

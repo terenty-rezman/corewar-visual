@@ -72,7 +72,7 @@ cycle = 50
 kill_cursor(cycle, 1, 2)  # kill cursor 2 of player 1
 cycle += 1
 
-for i in range(200):
+for i in range(20000):
     move_cursor(cycle, 1, 1, 4)  # move cursor 2 of player 1
     write_memory(cycle, 1, i * 6 + random.randint(0, 10), "AAFF01Baedf0")
 

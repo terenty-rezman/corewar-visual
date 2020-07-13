@@ -1,6 +1,6 @@
 from typing import List
 
-from state_manager import CorewarStateManager
+from cw_visual.state_manager import CorewarStateManager
 
 # separator symbol
 separator = '"'

@@ -72,7 +72,7 @@ class PlayerInfo(QWidget):
 
     def declare_loser(self):
         self.cursor_number.setText("loser")
-        self.cursor_number.setProperty("lighted", False)
+        self.cursor_number.setProperty("lighted", True)
         update_stylesheet(self.cursor_number)
 
 

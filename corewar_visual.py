@@ -8,11 +8,11 @@ from typing import List
 from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import QTimer
 
-from stdin_listener import StdinListener
-from colors import *
-from view import View
-from state_manager import CorewarStateManager
-from cw_parser import CorewarParser
+from cw_visual.stdin_listener import StdinListener
+from cw_visual.colors import PEN_WARNING
+from cw_visual.view import View
+from cw_visual.state_manager import CorewarStateManager
+from cw_visual.cw_parser import CorewarParser
 
 
 def uncaught_exception_hook(exctype, value, tb):

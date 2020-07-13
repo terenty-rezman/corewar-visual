@@ -1,6 +1,6 @@
 from typing import Dict
 
-from colors import *
+from cw_visual.colors import *
 
 
 class Carriage:

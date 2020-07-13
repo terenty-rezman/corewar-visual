@@ -18,7 +18,7 @@ $ ./corewar batman.cor | python3 corewar_visual.py
 as `corewar_visual.py` expects data from `corewar` on its `stdin`
 
 # demo
-to run in demo mode you can use `stdout_test_writer.py` as a source for stdin of `corewar_visual.py`:
+to run in demo mode you can use `vm_output_emu.py` as a source for stdin of `corewar_visual.py`:
 ```
 $ ./vm_output_emu.py | ./corewar_visual.py
 ```
