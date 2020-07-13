@@ -12,6 +12,19 @@ def extract_cycle(line: str):
     return cycle
 
 
+delays = [
+    1000,
+    750,
+    500,
+    300,
+    200,
+    100,
+    50,
+    10,
+    1
+]
+
+
 class StdinListener:
     """
     1) runs a thread that reads stdin in parallel and puts any data read into a queue
@@ -25,6 +38,7 @@ class StdinListener:
         self.read_started = False
         self.line_next_cycle: str = None
         self.last_cycle: int = 0
+        self.speed = 0
 
         self.timer = QTimer()
         self.timeout = check_interval_ms
@@ -104,3 +118,19 @@ class StdinListener:
 
     def set_paused(self, paused=True):
         self.paused = paused
+
+    def slow_down(self):
+        if (self.speed > 0):
+            self.speed -= 1
+
+        self.set_interval(delays[self.speed])
+
+    def speed_up(self):
+        if (self.speed < len(delays) - 1):
+            self.speed += 1
+
+        self.set_interval(delays[self.speed])
+
+    def set_speed(self, speed: int):
+        self.speed = speed
+        self.set_interval(delays[self.speed])

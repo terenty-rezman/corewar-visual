@@ -53,10 +53,27 @@ def read_next_cycle():
     stdin_listener.read_next_cycle()
 
 
+def set_play_speed(speed: int):
+    stdin_listener.set_speed(speed)
+    view.set_speed(stdin_listener.speed + 1)
+
+
+def speed_up():
+    stdin_listener.speed_up()
+    view.set_speed(stdin_listener.speed + 1)
+
+
+def slow_down():
+    stdin_listener.slow_down()
+    view.set_speed(stdin_listener.speed + 1)
+
+
 def on_key_pressed(key: str):
     actions = {
         " ": run_or_pause,
-        "d": read_next_cycle
+        "d": read_next_cycle,
+        "+": speed_up,
+        "-": slow_down
     }
 
     action = actions.get(key, lambda: None)
@@ -84,6 +101,8 @@ if __name__ == "__main__":
     stdin_listener = StdinListener(on_stdin_data, 100)
 
     print_no_stdin_data_msg()
+
+    set_play_speed(3)
 
     stdin_listener.start_paused()
     view.show()

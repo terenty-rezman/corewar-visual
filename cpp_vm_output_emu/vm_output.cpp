@@ -69,6 +69,14 @@ void print_write_memory(int cycle, const void *player_id, int address, int32_t r
 	printf("w%c%d%c%p%c%d%c%08X\n", sep, cycle, sep, player_id, sep, address, sep, reg_value);
 }
 
+// печать при объявлении победителя
+// cycle номер текущего цикла
+// player_id айди игрока который выжил
+void print_declare_winner(int cycle, const void *player_id)
+{
+	printf("e%c%d%c%p\n", sep, cycle, sep, player_id);
+}
+
 int main()
 {
 	// пример игрок Бэтман
@@ -107,6 +115,10 @@ int main()
 	address = 64 * 25;
 	int32_t reg_value = 0x01AF223F;
 	print_write_memory(cycle, (void *)&batman, address, reg_value);
+
+	// пример вывода при победе Бэтмена
+	cycle = 400;
+	print_declare_winner(cycle, (void *)&batman);
 
 	return 0;
 }

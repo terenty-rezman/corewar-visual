@@ -117,3 +117,7 @@ class CorewarStateManager:
         player: Player = self.players[player_id]
 
         player.write_bytes(addr, bytes_str, self.view)
+
+    def declare_winner(self, player_id):
+        player: Player = self.players[player_id]
+        self.view.declare_winner(player.number)

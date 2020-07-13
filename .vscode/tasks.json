@@ -17,7 +17,7 @@
                     }
                 }
             },
-            "command": "vm_test_output.py > vm_feed.txt",
+            "command": "vm_output_emu.py > vm_feed.txt",
             "problemMatcher": []
         },
         {
@@ -51,7 +51,7 @@
                     }
                 }
             },
-            "command": "vm_test_output.py | corewar_visual.py",
+            "command": "vm_output_emu.py | corewar_visual.py",
             "problemMatcher": []
         }
     ]

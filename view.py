@@ -148,6 +148,7 @@ class View(QWidget):
         self.print_msg = self.byte_view.print_msg
         self.set_paused = self.game_info.set_paused
         self.set_cycle = self.game_info.set_cycle
+        self.set_speed = self.game_info.set_speed
 
         self.readSettings()
 
@@ -273,6 +274,16 @@ class View(QWidget):
     def set_cursor_count(self, pl_number, count):
         player: PlayerInfo = self.player_widgets[pl_number]
         player.set_cursors_count(count)
+
+    def declare_winner(self, number: int):
+        winner = self.player_widgets[number]
+        winner.declare_winner()
+
+        for player in self.player_widgets:
+            if player is not winner:
+                player.declare_loser()
+
+        self.game_info.set_game_finished()
 
 
 @dataclass

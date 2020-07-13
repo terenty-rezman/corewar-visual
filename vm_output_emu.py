@@ -42,11 +42,18 @@ def write_memory(cycle, player_id, address, bytes):
     )
 
 
+def declare_winner(cycle, player_id):
+    print(
+        f'e{sep}{cycle}{sep}{player_id}'
+    )
+
+
 sleep = functools.partial(time.sleep, 2)
 
 # start emulating output of corewar vm to stdout
 add_player(1, 1, 'Some really long name',
-           0, "00002901DA04446963742901DA")
+           0, "00002901DA04446963742901DA"
+           )
 add_player(1, 2, 'Robin', 64*10, "df01bb09")
 add_player(1, 3, 'Yoshi', 64*20, "47823958")
 add_player(1, 4, 'Mario', 64*50, "44ff55eeaabbcacd9933")
@@ -66,21 +73,21 @@ kill_cursor(cycle, 1, 2)  # kill cursor 2 of player 1
 cycle += 1
 
 for i in range(200):
-    move_cursor(cycle + i, 1, 1, 4)  # move cursor 2 of player 1
-    write_memory(cycle + i, 1, i * 6 + random.randint(0, 10), "AAFF01Baedf0")
+    move_cursor(cycle, 1, 1, 4)  # move cursor 2 of player 1
+    write_memory(cycle, 1, i * 6 + random.randint(0, 10), "AAFF01Baedf0")
 
-    move_cursor(cycle + i, 2, 2, 2)  # move cursor 2 of player 1
-    write_memory(cycle + i, 2, 64*10 + i * 6 +
+    move_cursor(cycle, 2, 2, 2)  # move cursor 2 of player 1
+    write_memory(cycle, 2, 64*10 + i * 6 +
                  random.randint(0, 10), "BB162fab08"
                  )
 
-    move_cursor(cycle + i, 3, 3, 3)  # move cursor 2 of player 1
-    write_memory(cycle + i, 3, 64*20 - i * 7 +
+    move_cursor(cycle, 3, 3, 3)  # move cursor 2 of player 1
+    write_memory(cycle, 3, 64*20 - i * 7 +
                  random.randint(0, 10), "17aa3891fe"
                  )
 
-    move_cursor(cycle + i, 4, 4, 8)  # move cursor 2 of player 1
-    write_memory(cycle + i, 4, 64*50 + i * 10 +
+    move_cursor(cycle, 4, 4, 8)  # move cursor 2 of player 1
+    write_memory(cycle, 4, 64*50 + i * 10 +
                  random.randint(0, 10), "6D6F64652E0D0D0A2401"
                  )
 
@@ -90,3 +97,5 @@ kill_cursor(cycle, 1, 1)  # kill cursor 2 of player 1
 kill_cursor(cycle, 2, 2)  # kill cursor 2 of player 1
 kill_cursor(cycle, 3, 3)  # kill cursor 2 of player 1
 kill_cursor(cycle, 4, 4)  # kill cursor 2 of player 1
+
+declare_winner(cycle, 1)

@@ -73,6 +73,14 @@ def write_memory(state_manager: CorewarStateManager, args: list):
     state_manager.write_bytes(player_id, address, bytes)
 
 
+@parser_for_command('e')
+def declare_winner(state_manager: CorewarStateManager, args: list):
+    cycle = args[0]
+    player_id = args[1]
+
+    state_manager.declare_winner(player_id)
+
+
 def unknown_command(line):
     print("unknown command: " + line)
 

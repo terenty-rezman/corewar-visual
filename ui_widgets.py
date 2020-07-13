@@ -65,10 +65,21 @@ class PlayerInfo(QWidget):
 
             update_stylesheet(self.cursor_number)
 
+    def declare_winner(self):
+        self.cursor_number.setText("winner")
+        self.cursor_number.setProperty("lighted", True)
+        update_stylesheet(self.cursor_number)
+
+    def declare_loser(self):
+        self.cursor_number.setText("loser")
+        self.cursor_number.setProperty("lighted", False)
+        update_stylesheet(self.cursor_number)
+
 
 class GameInfo(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.game_finished = False
 
         self.status = QLabel("paused")
         self.status.setProperty("status", "paused")  # for stylesheet
@@ -85,6 +96,9 @@ class GameInfo(QWidget):
         retain_size_when_hidden(self)
 
     def set_paused(self, paused: bool):
+        if self.game_finished:
+            return
+
         self.status.setText("paused" if paused else "playing")
         self.status.setProperty(
             "status", "paused" if paused else "play")  # for stylesheet
@@ -95,7 +109,13 @@ class GameInfo(QWidget):
         self.cycle_number.setText(str(cycle))
 
     def set_speed(self, speed: int):
-        self.speed.setText(str(speed))
+        self.speed_value.setText(str(speed))
+
+    def set_game_finished(self):
+        self.game_finished = True
+        self.status.setText("finished")
+        self.status.setProperty("status", "paused")  # for stylesheet
+        update_stylesheet(self.status)
 
     def __iter__(self):
         return iter((self.status, self.speed_title, self.speed_value, self.cycle_title, self.cycle_number))

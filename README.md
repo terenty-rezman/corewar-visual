@@ -20,10 +20,10 @@ as `corewar_visual.py` expects data from `corewar` on its `stdin`
 # demo
 to run in demo mode you can use `stdout_test_writer.py` as a source for stdin of `corewar_visual.py`:
 ```
-$ ./stdout_test_writer.py | ./corewar_visual.py
+$ ./vm_output_emu.py | ./corewar_visual.py
 ```
 
 on windows the command is:
 ```
-stdout_test_writer.py | corewar_visual.py
+vm_output_emu.py | corewar_visual.py
 ```
