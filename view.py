@@ -270,6 +270,10 @@ class View(QWidget):
 
         self.players_count += 1
 
+    def set_cursor_count(self, pl_number, count):
+        player: PlayerInfo = self.player_widgets[pl_number]
+        player.set_cursors_count(count)
+
 
 @dataclass
 class MsgLines:

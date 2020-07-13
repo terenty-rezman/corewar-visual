@@ -29,17 +29,19 @@ class PlayerInfo(QWidget):
 
         self.player_name = QLabel("Batman")
         self.player_name.setProperty("player", player_number)  # for stylesheet
-        self.player_name.setProperty("dead", True)
+        # self.player_name.setProperty("dead", True)
 
         self.cursors_title = QLabel(f"cursors:")
 
         self.cursor_number = QLabel("0")
+
         self.cursor_number.setProperty(
-            "player", player_number)  # for stylesheet
-        self.cursor_number.setProperty(
-            "lighted", True)
+            "player", player_number
+        )  # for stylesheet
+
         self.cursor_number.setSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Preferred)
+            QSizePolicy.Fixed, QSizePolicy.Preferred
+        )
 
         retain_size_when_hidden(self)
 
@@ -55,6 +57,13 @@ class PlayerInfo(QWidget):
 
     def set_cursors_count(self, count: int):
         self.cursor_number.setText(str(count))
+
+        if count == 0:
+            self.cursor_number.setProperty(
+                "lighted", True
+            )
+
+            update_stylesheet(self.cursor_number)
 
 
 class GameInfo(QWidget):

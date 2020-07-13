@@ -24,7 +24,8 @@ class Carriage:
 
 
 class Player:
-    def __init__(self, name, pen, brush):
+    def __init__(self, number, name, pen, brush):
+        self.number = number
         self.name = name
         self.pen = pen
         self.brush = brush
@@ -48,11 +49,16 @@ class CorewarStateManager:
         if name in self.players:
             raise Exception(name + " player already exists")
 
-        self.players[id] = Player(name, next(next_pen), next(next_brush))
+        player_number = len(self.players)
+
+        self.players[id] = Player(
+            player_number, name, next(next_pen), next(next_brush)
+        )
+
         self.view.add_player(name[:8])
 
     def add_cursor(self, player_id, carriage_id, addr):
-        player = self.players[player_id]
+        player: Player = self.players[player_id]
 
         if carriage_id in player.cursors:
             raise Exception(carriage_id + " carriage already exists")
@@ -63,13 +69,17 @@ class CorewarStateManager:
         self.view.draw_cursor_rect(
             new_cursor.pos, player.brush, new_cursor.addr)
 
+        self.view.set_cursor_count(player.number, len(player.cursors))
+
     def kill_cursor(self, player_id, carriage_id):
-        player = self.players[player_id]
+        player: Player = self.players[player_id]
         cursor = player.cursors[carriage_id]
 
         del player.cursors[carriage_id]
 
         self.view.erase_cursor_rect(cursor.pos)
+
+        self.view.set_cursor_count(player.number, len(player.cursors))
 
     def move_cursor(self, player_id, carriage_id, num_bytes):
         player_this: Player = self.players[player_id]

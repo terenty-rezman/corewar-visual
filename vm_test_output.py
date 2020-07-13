@@ -61,20 +61,32 @@ add_cursor(10, 1, 2, 64*13)  # player 1 adds cursor 2
 move_cursor(20, 1, 2, 4)  # move cursor 2 of player 1
 move_cursor(40, 1, 2, 4)  # move cursor 2 of player 1
 
-kill_cursor(50, 1, 2)  # kill cursor 2 of player 1
+cycle = 50
+kill_cursor(cycle, 1, 2)  # kill cursor 2 of player 1
+cycle += 1
 
-for i in range(2000):
-    move_cursor(51 + i, 1, 1, 4)  # move cursor 2 of player 1
-    write_memory(51 + i, 1, i * 6 + random.randint(0, 10), "AAFF01Baedf0")
+for i in range(200):
+    move_cursor(cycle + i, 1, 1, 4)  # move cursor 2 of player 1
+    write_memory(cycle + i, 1, i * 6 + random.randint(0, 10), "AAFF01Baedf0")
 
-    move_cursor(51 + i, 2, 2, 2)  # move cursor 2 of player 1
-    write_memory(51 + i, 2, 64*10 + i * 6 +
-                 random.randint(0, 10), "BB162fab08")
+    move_cursor(cycle + i, 2, 2, 2)  # move cursor 2 of player 1
+    write_memory(cycle + i, 2, 64*10 + i * 6 +
+                 random.randint(0, 10), "BB162fab08"
+                 )
 
-    move_cursor(51 + i, 3, 3, 3)  # move cursor 2 of player 1
-    write_memory(51 + i, 3, 64*20 - i * 7 +
-                 random.randint(0, 10), "17aa3891fe")
+    move_cursor(cycle + i, 3, 3, 3)  # move cursor 2 of player 1
+    write_memory(cycle + i, 3, 64*20 - i * 7 +
+                 random.randint(0, 10), "17aa3891fe"
+                 )
 
-    move_cursor(51 + i, 4, 4, 8)  # move cursor 2 of player 1
-    write_memory(51 + i, 4, 64*50 + i * 10 +
-                 random.randint(0, 10), "6D6F64652E0D0D0A2401")
+    move_cursor(cycle + i, 4, 4, 8)  # move cursor 2 of player 1
+    write_memory(cycle + i, 4, 64*50 + i * 10 +
+                 random.randint(0, 10), "6D6F64652E0D0D0A2401"
+                 )
+
+    cycle += 1
+
+kill_cursor(cycle, 1, 1)  # kill cursor 2 of player 1
+kill_cursor(cycle, 2, 2)  # kill cursor 2 of player 1
+kill_cursor(cycle, 3, 3)  # kill cursor 2 of player 1
+kill_cursor(cycle, 4, 4)  # kill cursor 2 of player 1

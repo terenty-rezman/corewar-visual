@@ -21,13 +21,29 @@ QLabel[player="2"] {
     color: #E9C13B;
 }
 
+QLabel[player="2"][lighted="true"] {
+    color: #1d1d1d;
+    background:#E9C13B;
+}
+
 QLabel[player="3"] {
     color: #0A92AC;
+}
+
+QLabel[player="3"][lighted="true"] {
+    color: #1d1d1d;
+    background:#0A92AC;
 }
 
 QLabel[player="4"] {
     color: #8662EA;
 }
+
+QLabel[player="4"][lighted="true"] {
+    color: #1d1d1d;
+    background:#8662EA;
+}
+
 
 QLabel[dead="true"] {
     text-decoration: line-through;

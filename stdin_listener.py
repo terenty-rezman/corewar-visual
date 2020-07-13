@@ -23,7 +23,8 @@ class StdinListener:
     def __init__(self, callback, check_interval_ms=1000):
         self.callback = callback
         self.read_started = False
-        self.line_next_cycle = None
+        self.line_next_cycle: str = None
+        self.last_cycle: int = 0
 
         self.timer = QTimer()
         self.timeout = check_interval_ms
@@ -48,20 +49,21 @@ class StdinListener:
 
     def read_queue(self):
         """
-        check if any line in queue then extract all lines for this cycle and send it to callback
-        sends "start" notification on first run whe some data arrives from stdin
+        attempts to read from stdin queue and sends data to callback with all lines for one cycle
         """
-        if not self.stdin_line_queue.empty():
-            if not self.read_started:
+        # sends "start" notification on first run whe some data arrives from stdin
+        if not self.read_started:
+            if not self.stdin_line_queue.empty():
                 self.callback(0, "start")
                 self.read_started = True
 
-            if(not self.paused):
-                self.read_next_cycle()
+        if(not self.paused):
+            self.read_next_cycle()
 
     def read_next_cycle(self):
-        cycle, lines = self.get_lines_one_cycle()
-        self.callback(cycle, lines)
+        if not self.stdin_line_queue.empty() or self.line_next_cycle:
+            cycle, lines = self.get_lines_one_cycle()
+            self.callback(cycle, lines)
 
     def get_lines_one_cycle(self):
         """extracts all lines for one cycle, if next cycle occurs returns"""
@@ -92,7 +94,6 @@ class StdinListener:
                 lines.append(line)
 
             except queue.Empty:
-                print("empty")
                 break
 
         return current_cycle, lines
