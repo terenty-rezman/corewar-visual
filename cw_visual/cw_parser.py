@@ -28,7 +28,7 @@ def add_player(state_manager: CorewarStateManager, args: list):
     player_id = args[1]
     name = args[2]
     address = int(args[3])
-    bytes_str = args[4]
+    bytes_str = args[4].upper()
 
     state_manager.add_player(player_id, name)
     state_manager.write_bytes(player_id, address, bytes_str)
@@ -68,7 +68,7 @@ def write_memory(state_manager: CorewarStateManager, args: list):
     cycle = args[0]
     player_id = args[1]
     address = int(args[2])
-    bytes = args[3]
+    bytes = args[3].upper()
 
     state_manager.write_bytes(player_id, address, bytes)
 

@@ -6,10 +6,10 @@ import re
 from PySide2.QtCore import QTimer
 
 
-# queue between stdin reader and consumer 
+# queue between stdin reader and consumer
 # setting size prevets reading all the data from stdin at once and allocating huge buffer for long game
-# otherwise buffer allocating ~20kk lines is usual thing to happen
-MAX_QUEUE_SIZE = 1000
+# otherwise buffer allocating ~5kk lines is usual thing to happen
+MAX_QUEUE_SIZE = 200
 
 
 def extract_cycle(line: str):
