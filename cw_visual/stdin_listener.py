@@ -6,6 +6,12 @@ import re
 from PySide2.QtCore import QTimer
 
 
+# queue between stdin reader and consumer 
+# setting size prevets reading all the data from stdin at once and allocating huge buffer for long game
+# otherwise buffer allocating ~20kk lines is usual thing to happen
+MAX_QUEUE_SIZE = 1000
+
+
 def extract_cycle(line: str):
     m = re.search(r'(?<=")\d+(?=")', line)
     cycle = m.group()
@@ -44,7 +50,7 @@ class StdinListener:
         self.timeout = check_interval_ms
         self.timer.timeout.connect(self.read_queue)
 
-        self.stdin_line_queue = queue.Queue()
+        self.stdin_line_queue = queue.Queue(MAX_QUEUE_SIZE)
         self.parallel_reader = threading.Thread(
             target=self.parallel_read_stdin, args=(self.stdin_line_queue,))
 

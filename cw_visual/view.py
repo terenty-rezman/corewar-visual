@@ -1,5 +1,6 @@
 from typing import List, Dict, Tuple
 from dataclasses import dataclass
+import os
 
 from PySide2.QtWidgets import QApplication, QWidget, QScrollArea, QHBoxLayout, QVBoxLayout, QSizePolicy, QScrollBar, QLabel
 from PySide2.QtGui import QPainter, QPen, QBrush, QColor, QPainterPath, QTransform, QPixmap, QFontMetrics, QFont
@@ -210,7 +211,11 @@ class View(QWidget):
 
         self.scroll_area.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
 
-        with open("cw_visual/stylesheet.qss") as file:
+        # path relative to current file otherwise crash when main.py called from different working dir
+        dirname = os.path.dirname(__file__)
+        stylesheet_path = os.path.join(dirname, 'stylesheet.qss')
+
+        with open(stylesheet_path) as file:
             stylesheet = file.read()
 
         self.setObjectName("main")  # for proper styling
