@@ -230,6 +230,26 @@ class View(QWidget):
             self.key_pressed.emit("+")
         elif ev.key() == Qt.Key_Minus:
             self.key_pressed.emit("-")
+        elif ev.key() == Qt.Key_F11:
+            self.toggle_fullscreen()
+        elif ev.key() == Qt.Key_Return and ev.modifiers() & Qt.AltModifier:
+            self.toggle_fullscreen()
+        elif ev.key() == Qt.Key_Escape:
+            self.exit_fullscreen()
+
+    def toggle_fullscreen(self):
+        if self.isFullScreen():
+            self.exit_fullscreen()
+        else:
+            self.enter_fullscreen() 
+
+    def enter_fullscreen(self):
+        wstate = self.windowState()
+        self.setWindowState(wstate | Qt.WindowFullScreen)
+    
+    def exit_fullscreen(self):
+        wstate = self.windowState()
+        self.setWindowState(wstate & (~Qt.WindowFullScreen))
 
     def showEvent(self, evt):
         if self.first_show:
@@ -253,18 +273,24 @@ class View(QWidget):
         self.setGeometry(geometry)
 
         maximized = settings.value("maximized", False)
-        if maximized == "true":
-            wstate = self.windowState()
+        fullscreen = settings.value("fullscreen", False)
+        wstate = self.windowState()
+
+        if fullscreen == "true":
+            self.setWindowState(wstate | Qt.WindowFullScreen)
+        elif maximized:
             self.setWindowState(wstate | Qt.WindowMaximized)
+
 
     def writeSettings(self):
         # remeber window position
         settings = QSettings("settings.ini", QSettings.IniFormat)
 
-        if not self.isMaximized():
+        if not (self.isMaximized() or self.isFullScreen()):
             settings.setValue("geometry", self.geometry())
 
         settings.setValue("maximized", self.isMaximized())
+        settings.setValue("fullscreen", self.isFullScreen())
 
     def add_player(self, name: str):
         index = self.players_count
@@ -317,8 +343,10 @@ class ByteView(QWidget):
         self.startTimer(1000/60)
 
     def initialize(self):
+        font_size = compute_font_size()
+
         font = QApplication.font()
-        font.setPixelSize(14)
+        font.setPixelSize(font_size)
         # font.setBold(True)
         self.font = font
 
@@ -511,3 +539,21 @@ class ByteView(QWidget):
     def timerEvent(self, event):
         # render pixmaps to widget
         self.update()
+
+def compute_font_size():
+    screen_rect = QApplication.desktop().availableGeometry()
+
+    font_size = 14
+
+    while True:
+        font = QApplication.font()
+        font.setPixelSize(font_size)
+        fm = QFontMetrics(font)
+
+        byte_height = fm.boundingRect("0").height()
+        byte_view_height = byte_height * 64
+
+        if byte_view_height < screen_rect.height():
+            return font_size
+        else:
+            font_size -= 1

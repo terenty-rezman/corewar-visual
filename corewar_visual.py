@@ -36,7 +36,9 @@ def print_no_stdin_data_msg():
 def print_controls_info_msg():
     view.print_msg(
         "corewar 42\n\npress \"space\" to run/pause the simulation\n"
-        "+-to speed up/slow down\n\"D\" next step paused"
+        "+-to speed up/slow down\n\"D\" next step paused\n"
+        "Alt + enter to go fullscreen\n"
+        " F11 to go fullscreen"
     )
 
 
