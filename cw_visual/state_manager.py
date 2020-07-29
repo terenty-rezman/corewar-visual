@@ -4,10 +4,11 @@ from cw_visual.colors import *
 
 
 class Carriage:
-    def __init__(self, addr=0):
+    def __init__(self, brush, addr=0):
         self.i = 0
         self.j = 0
         self.addr = addr
+        self.brush = brush
 
     @property
     def addr(self):
@@ -29,6 +30,7 @@ class Player:
         self.name = name
         self.pen = pen
         self.brush = brush
+
         self.cursors: Dict[str, Carriage] = dict()
 
     def write_bytes(self, addr, bytes_str, view):
@@ -44,6 +46,7 @@ class CorewarStateManager:
     def __init__(self, view):
         self.view = view
         self.players: Dict[str, Player] = dict()
+        self.cursors_field = create_cursor_field(64*64)
 
     def add_player(self, id, name):
         if name in self.players:
@@ -63,13 +66,16 @@ class CorewarStateManager:
         if carriage_id in player.cursors:
             raise Exception(carriage_id + " carriage already exists")
 
-        new_cursor = Carriage(addr=addr)
+        new_cursor = Carriage(player.brush, addr=addr)
         player.cursors[carriage_id] = new_cursor
 
         self.view.draw_cursor_rect(
             new_cursor.pos, player.brush, new_cursor.addr)
 
         self.view.set_cursor_count(player.number, len(player.cursors))
+
+        # store reference to cursor in the field
+        self.cursors_field[new_cursor.addr].append(new_cursor)
 
     def kill_cursor(self, player_id, carriage_id):
         player: Player = self.players[player_id]
@@ -81,24 +87,21 @@ class CorewarStateManager:
 
         self.view.set_cursor_count(player.number, len(player.cursors))
 
+        # remove reference to cursor from the field
+        self.cursors_field[cursor.addr].remove(cursor)
+
     def move_cursor(self, player_id, carriage_id, num_bytes):
         player_this: Player = self.players[player_id]
         cursor_this: Carriage = player_this.cursors[carriage_id]
 
         repaint_cursor = False
 
-        # check if any other cursors on the same pos as cursor_this
-        # if so erase old cursor pos with other cursor's brush
-        for player in self.players.values():
-            for cursor in player.cursors.values():
-                if cursor != cursor_this:
-                    if cursor.i == cursor_this.i and cursor.j == cursor_this.j:
-                        repaint_cursor = True
-                        brush = player.brush
-                        break
-            else:
-                continue
-            break
+        # remove reference to cursor from current occupied cell
+        self.cursors_field[cursor_this.addr].remove(cursor_this)
+
+        if len(self.cursors_field[cursor_this.addr]):
+            repaint_cursor = True
+            brush = self.cursors_field[cursor_this.addr][0].brush
 
         # erase cursor from old pos
         if repaint_cursor:
@@ -113,6 +116,9 @@ class CorewarStateManager:
         self.view.draw_cursor_rect(
             cursor_this.pos, player_this.brush, cursor_this.addr)
 
+        # add reference to cursor to newly occupied cell 
+        self.cursors_field[cursor_this.addr].append(cursor_this)
+
     def write_bytes(self, player_id, addr, bytes_str):
         player: Player = self.players[player_id]
 
@@ -121,3 +127,10 @@ class CorewarStateManager:
     def declare_winner(self, player_id):
         player: Player = self.players[player_id]
         self.view.declare_winner(player.number)
+
+def create_cursor_field(cells_count):
+    l = []
+    for _ in range(cells_count):
+        l.append([])
+    
+    return l
