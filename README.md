@@ -1,6 +1,4 @@
 # visualization for corewar
-> __NOTE__
-> the project is __not__ done !
 
 visualization is implemented in __python 3__ 
 using [pyside2](https://pypi.org/project/PySide2/) - Qt framework port for python
