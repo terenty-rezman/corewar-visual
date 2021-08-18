@@ -3,6 +3,8 @@
 visualization is implemented in __python 3__ 
 using [pyside2](https://pypi.org/project/PySide2/) - Qt framework port for python
 
+![image](https://user-images.githubusercontent.com/58115884/129872533-d0f99ca5-3ef6-4181-b9db-dabc5e3747b7.png)
+
 # installing dependencies
 ```
 $ pip install pyside2
@@ -31,5 +33,5 @@ $ ./vm_output_emu.py | ./corewar_visual.py
 
 on windows the command is:
 ```
-vm_output_emu.py | corewar_visual.py
+python vm_output_emu.py | python corewar_visual.py
 ```
